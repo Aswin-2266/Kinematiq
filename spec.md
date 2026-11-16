@@ -13,7 +13,7 @@
 | :--- | :--- | :--- | :--- |
 | **Phase 1** | **Project Scaffolding & Design Foundation** | Next.js 14 App Router, TypeScript, Tailwind CSS, Kinetic Pulse theme variables, PWA Manifest, mobile viewport meta tags | `[x] Completed` |
 | **Phase 2** | **MongoDB Layer & Data Models** | Mongoose connection pool, User, Exercise, Routine, WorkoutSession schemas, offline sync engine, seed data for 6 screenshot exercises | `[x] Completed` |
-| **Phase 3** | **Mobile APIs (Audio Engine & Wake Lock)** | Web Audio API gym beeps (zero external assets), Web Speech API voice coach, Screen Wake Lock API (keeps phone screen on) | `[ ] Pending` |
+| **Phase 3** | **Mobile APIs (Audio Engine & Wake Lock)** | Web Audio API gym beeps (zero external assets), Web Speech API voice coach, Screen Wake Lock API (keeps phone screen on) | `[x] Completed` |
 | **Phase 4** | **Visual Form Motion Engine** | High-contrast animated visual guides for all 6 exercises (Squats, Push-Ups, Reverse Lunges, Glute Bridges, Plank, Burpees/Mountain Climbers) + Form Cues | `[ ] Pending` |
 | **Phase 5** | **Workout Interval Timer & State Machine** | 40s Work / 20s Rest / 60s Round Break cycle, 3 full rounds, "Up Next" preview during 20s rest, large mobile touch targets | `[ ] Pending` |
 | **Phase 6** | **Authentication, History & Custom Builder** | Multi-user JWT auth, Workout completion summary, MongoDB session history & streaks, Custom routine editor | `[ ] Pending` |
@@ -40,16 +40,16 @@
 - [x] Health check and workout session API routes (`/api/health`, `/api/workouts`)
 
 ### Phase 3: Hardware & Mobile APIs
-- [ ] Build Web Audio API synthesizer (`src/lib/audioEngine.ts`):
+- [x] Build Web Audio API synthesizer (`src/lib/audioEngine.ts`):
   - **Default State**: Audio is **MUTED/OFF by default**.
   - 880Hz Start chime
   - 440Hz Rest tone
   - 587Hz 3-2-1 countdown ticks
   - Multi-tone round completion sound
-- [ ] Build Web Speech API voice coach: Spoken notifications ("Next: Forearm Plank", "Begin Squats")
-- [ ] Add prominent Audio ON/OFF and Voice Coach ON/OFF toggles on the main workout screen and navbar
-- [ ] Safely unlock and resume Web Audio AudioContext only when user actively toggles sound ON
-- [ ] Build Screen Wake Lock manager (`src/lib/wakeLock.ts`) with auto-reacquire on visibility change
+- [x] Build Web Speech API voice coach: Spoken notifications ("Next: Forearm Plank", "Begin Squats")
+- [x] Add prominent Audio ON/OFF and Voice Coach ON/OFF toggles on the main workout screen and navbar
+- [x] Safely unlock and resume Web Audio AudioContext only when user actively toggles sound ON
+- [x] Build Screen Wake Lock manager (`src/lib/wakeLock.ts`) with auto-reacquire on visibility change
 
 ### Phase 4: Visual Form Motion Engine & Form Coach
 - [ ] Build animated SVG motion components for the 6 screenshot exercises:
