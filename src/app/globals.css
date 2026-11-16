@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-primary: #FAFAFA;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #F1F5F9;
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --border-subtle: #E2E8F0;
+  --accent-work: #FF5E1E; /* Kinetic Fiery Coral */
+  --accent-work-glow: rgba(255, 94, 30, 0.2);
+  --accent-rest: #10B981; /* Vitality Emerald */
+  --accent-rest-glow: rgba(16, 185, 129, 0.2);
+  --accent-break: #3B82F6; /* Focus Cobalt */
+}
+
+.dark {
+  --bg-primary: #0B0F19; /* Deep Obsidian */
+  --bg-surface: #141E33; /* Obsidian Slate */
+  --bg-surface-elevated: #1E293B;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --border-subtle: #24324D;
+  --accent-work: #FF7A00; /* Sunset Orange */
+  --accent-work-glow: rgba(255, 122, 0, 0.25);
+  --accent-rest: #10B981; /* Neon Emerald */
+  --accent-rest-glow: rgba(16, 185, 129, 0.25);
+  --accent-break: #38BDF8;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow-x: hidden;
+}
+
+/* Prevent unwanted pull-to-refresh on mobile while retaining normal scroll */
+html, body {
+  overscroll-behavior-y: contain;
+}
+
+/* Mobile minimum touch target standards */
+button, a, input, select {
+  min-height: 44px;
+}
+
+/* Smooth transitions for theme switches */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
