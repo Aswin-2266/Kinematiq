@@ -2,20 +2,40 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Routine } from "@/models/Routine";
 import { DEFAULT_ROUTINE } from "@/data/defaultRoutine";
+import { verifyToken } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const conn = await connectToDatabase();
-    if (!conn) {
-      return NextResponse.json({ success: true, routines: [DEFAULT_ROUTINE] });
+    let userId: string | null = null;
+    const authHeader = req.headers.get("authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      const payload = verifyToken(token);
+      if (payload) {
+        userId = payload.userId;
+      }
     }
 
-    const customRoutines = await Routine.find().sort({ createdAt: -1 });
+    const conn = await connectToDatabase();
+    if (!conn) {
+      return NextResponse.json({
+        success: true,
+        userRoutine: null,
+        defaultRoutine: DEFAULT_ROUTINE,
+      });
+    }
+
+    let userRoutine = null;
+    if (userId) {
+      userRoutine = await Routine.findOne({ userId }).sort({ updatedAt: -1 });
+    }
+
     return NextResponse.json({
       success: true,
-      routines: [DEFAULT_ROUTINE, ...customRoutines],
+      userRoutine,
+      defaultRoutine: DEFAULT_ROUTINE,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Error fetching routines";
@@ -25,6 +45,16 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    let userId: string | null = null;
+    const authHeader = req.headers.get("authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      const token = authHeader.split(" ")[1];
+      const payload = verifyToken(token);
+      if (payload) {
+        userId = payload.userId;
+      }
+    }
+
     const body = await req.json();
     const conn = await connectToDatabase();
 
@@ -35,20 +65,41 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const created = await Routine.create({
-      title: body.title || "Custom Circuit",
-      description: body.description || "",
-      isDefault: false,
-      workDurationSeconds: body.workDurationSeconds || 40,
-      restDurationSeconds: body.restDurationSeconds || 20,
-      roundBreakDurationSeconds: body.roundBreakDurationSeconds || 60,
-      totalRounds: body.totalRounds || 3,
-      exercises: body.exercises || DEFAULT_ROUTINE.exercises,
-    });
+    let routineDoc;
+    if (userId) {
+      // Upsert custom routine for this account
+      routineDoc = await Routine.findOneAndUpdate(
+        { userId },
+        {
+          userId,
+          title: body.title || "Custom Circuit",
+          description: body.description || DEFAULT_ROUTINE.description,
+          isDefault: false,
+          workDurationSeconds: body.workDurationSeconds || 40,
+          restDurationSeconds: body.restDurationSeconds || 20,
+          roundBreakDurationSeconds: body.roundBreakDurationSeconds || 60,
+          totalRounds: body.totalRounds || 3,
+          exercises: body.exercises || DEFAULT_ROUTINE.exercises,
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
+    } else {
+      // Guest or public routine creation
+      routineDoc = await Routine.create({
+        title: body.title || "Custom Circuit",
+        description: body.description || "",
+        isDefault: false,
+        workDurationSeconds: body.workDurationSeconds || 40,
+        restDurationSeconds: body.restDurationSeconds || 20,
+        roundBreakDurationSeconds: body.roundBreakDurationSeconds || 60,
+        totalRounds: body.totalRounds || 3,
+        exercises: body.exercises || DEFAULT_ROUTINE.exercises,
+      });
+    }
 
-    return NextResponse.json({ success: true, routine: created }, { status: 201 });
+    return NextResponse.json({ success: true, routine: routineDoc }, { status: 200 });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Error creating routine";
+    const message = err instanceof Error ? err.message : "Error saving routine";
     return NextResponse.json({ success: false, error: message }, { status: 500 });
   }
 }

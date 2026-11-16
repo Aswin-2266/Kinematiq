@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { 
   Sun, 
   Moon, 
@@ -18,12 +18,9 @@ import {
   User as UserIcon, 
   CheckCircle2,
   Target,
-  Sparkles,
   Zap,
   Clock,
   Dumbbell,
-  HeartPulse,
-  Info,
   ChevronRight,
   TrendingUp,
   Activity
@@ -58,15 +55,51 @@ export default function Home() {
     }
   }, [theme]);
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem("kinematiq_user");
-    if (savedUser) {
+  // Load user's customized routine from local storage or cloud MongoDB
+  const loadUserRoutine = useCallback(async (userId?: string) => {
+    // 1. Check local storage first for instantaneous load
+    const localKey = userId ? `kinematiq_routine_${userId}` : "kinematiq_custom_routine";
+    const cached = localStorage.getItem(localKey);
+    if (cached) {
       try {
-        setCurrentUser(JSON.parse(savedUser));
+        setRoutine(JSON.parse(cached));
+      } catch {}
+    } else {
+      setRoutine(DEFAULT_ROUTINE);
+    }
+
+    // 2. Sync from MongoDB Atlas if user is signed in
+    const token = localStorage.getItem("kinematiq_token");
+    if (token) {
+      try {
+        const res = await fetch("/api/routines", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success && data.userRoutine) {
+          setRoutine(data.userRoutine);
+          if (userId) {
+            localStorage.setItem(`kinematiq_routine_${userId}`, JSON.stringify(data.userRoutine));
+          }
+        }
       } catch {
-        // Ignore
+        // Offline resilience fallback: keep cached routine
       }
     }
+  }, []);
+
+  useEffect(() => {
+    const savedUserStr = localStorage.getItem("kinematiq_user");
+    let parsedUser: User | null = null;
+    if (savedUserStr) {
+      try {
+        parsedUser = JSON.parse(savedUserStr);
+        setCurrentUser(parsedUser);
+      } catch {}
+    }
+
+    // Load routine for this account
+    loadUserRoutine(parsedUser?.id);
 
     const local = getLocalSessions();
     setSessions(local);
@@ -75,7 +108,7 @@ export default function Home() {
         setSessions(getLocalSessions());
       }
     });
-  }, []);
+  }, [loadUserRoutine]);
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
@@ -89,6 +122,7 @@ export default function Home() {
 
   const handleAuthSuccess = (user: User) => {
     setCurrentUser(user);
+    loadUserRoutine(user.id);
     syncPendingSessions().then(() => {
       setSessions(getLocalSessions());
     });
@@ -99,6 +133,33 @@ export default function Home() {
     localStorage.removeItem("kinematiq_user");
     setCurrentUser(null);
     setIsAuthOpen(false);
+    setRoutine(DEFAULT_ROUTINE);
+  };
+
+  // Save routine customizations for this account
+  const handleSaveRoutine = async (updated: Routine) => {
+    setRoutine(updated);
+
+    // 1. Save locally for instant offline persistence
+    const localKey = currentUser ? `kinematiq_routine_${currentUser.id}` : "kinematiq_custom_routine";
+    localStorage.setItem(localKey, JSON.stringify(updated));
+
+    // 2. Save to cloud MongoDB Atlas under the user's account if logged in
+    const token = localStorage.getItem("kinematiq_token");
+    if (token) {
+      try {
+        await fetch("/api/routines", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updated),
+        });
+      } catch {
+        // Offline fallback: already saved in localStorage
+      }
+    }
   };
 
   // Calculations for stats
@@ -110,7 +171,7 @@ export default function Home() {
   const totalMinutesTrained = Math.round(sessions.reduce((acc, s) => acc + s.totalSeconds, 0) / 60);
 
   return (
-    <div className="min-h-screen w-full bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col justify-between transition-colors duration-150 [scrollbar-gutter:stable]">
+    <div className="min-h-screen w-full bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col justify-between transition-colors duration-150 [scrollbar-gutter:stable] pb-24 sm:pb-28">
       {/* 1. FULL-WIDTH EDGE-TO-EDGE TOP NAVIGATION */}
       <header className="w-full border-b border-[var(--border-subtle)] bg-[var(--bg-primary)]/90 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
@@ -138,12 +199,12 @@ export default function Home() {
           <div className="hidden lg:flex items-center gap-6 px-4 py-1.5 rounded-full bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs font-display font-bold text-[var(--text-secondary)]">
             <span className="flex items-center gap-1.5 text-orange-500">
               <Zap className="w-3.5 h-3.5 fill-current" />
-              <span>3 ROUNDS</span>
+              <span>{routine.totalRounds} ROUNDS</span>
             </span>
             <span className="text-[var(--border-subtle)]">•</span>
             <span className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-slate-400" />
-              <span>40S WORK / 20S REST</span>
+              <span>{routine.workDurationSeconds}S WORK / {routine.restDurationSeconds}S REST</span>
             </span>
             <span className="text-[var(--border-subtle)]">•</span>
             <span className="flex items-center gap-1.5 text-emerald-500">
@@ -348,7 +409,7 @@ export default function Home() {
                   <span>CIRCUIT MOVEMENT SEQUENCE</span>
                 </h3>
                 <p className="text-xs text-[var(--text-muted)] font-sans mt-0.5">
-                  Complete each movement for 40 seconds with 20 seconds rest between stations
+                  Complete each movement for {routine.workDurationSeconds} seconds with {routine.restDurationSeconds} seconds rest between stations
                 </p>
               </div>
 
@@ -488,7 +549,7 @@ export default function Home() {
                     READY FOR YOUR FIRST SESSION?
                   </p>
                   <p className="text-[11px] max-w-xs text-[var(--text-muted)] font-sans">
-                    Tap &quot;Start Workout&quot; above. Your rounds and calories will automatically record here and sync to MongoDB Atlas.
+                    Tap &quot;Start Workout&quot; below. Your rounds and calories will automatically record here and sync to MongoDB Atlas.
                   </p>
                 </div>
               )}
@@ -518,7 +579,7 @@ export default function Home() {
                   </div>
                   <p>
                     <strong className="text-[var(--text-primary)] font-display uppercase tracking-wider block">Consistent Work Rate:</strong>
-                    Don&apos;t sprint the first 15 seconds and burnout. Maintain a rhythmic pace that lets you work through all 40 seconds.
+                    Don&apos;t sprint the first 15 seconds and burnout. Maintain a rhythmic pace that lets you work through all {routine.workDurationSeconds} seconds.
                   </p>
                 </div>
 
@@ -581,12 +642,43 @@ export default function Home() {
         </div>
       </footer>
 
+      {/* 4. STICKY BOTTOM START WORKOUT CONTROLLER */}
+      {!isWorkingOut && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[var(--bg-primary)]/95 backdrop-blur-lg border-t border-[var(--border-subtle)] px-4 py-3 sm:py-3.5 shadow-2xl transition-all">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            {/* Protocol Summary Details (Hidden on small mobile screens, visible on tablet/desktop) */}
+            <div className="hidden sm:flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-500 flex items-center justify-center font-display font-black text-sm shrink-0">
+                {routine.totalRounds}R
+              </div>
+              <div>
+                <h4 className="font-display font-black text-sm uppercase text-[var(--text-primary)] tracking-wide leading-tight">
+                  {routine.title}
+                </h4>
+                <p className="text-[11px] text-[var(--text-muted)] font-mono">
+                  {routine.workDurationSeconds}s Work • {routine.restDurationSeconds}s Rest • ~{totalDurationMinutes} mins total
+                </p>
+              </div>
+            </div>
+
+            {/* Glowing High-Impact Tactile Start Button (100% full-width on mobile phones, prominent on desktop) */}
+            <button
+              onClick={() => setIsWorkingOut(true)}
+              className="w-full sm:w-auto sm:min-w-[320px] py-3.5 sm:py-4 px-8 rounded-2xl bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 text-white font-display font-black tracking-wider text-base sm:text-lg flex items-center justify-center gap-2.5 shadow-xl shadow-orange-500/30 active:scale-[0.98] transition-all hover:brightness-105"
+            >
+              <Play className="w-5 h-5 fill-current" />
+              <span>START WORKOUT ({routine.totalRounds} ROUNDS)</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* MODALS */}
 
       {/* Exercise Technique Detail Modal */}
       {selectedExercise && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl max-w-lg w-full p-6 flex flex-col gap-4 shadow-2xl animate-fade-in">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-primary)] rounded-3xl max-w-lg w-full p-6 flex flex-col gap-4 shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-display font-bold uppercase tracking-widest text-orange-500">
@@ -620,8 +712,8 @@ export default function Home() {
             </div>
 
             {selectedExercise.watchOutWarning && (
-              <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-start gap-2">
-                <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-red-400" />
+              <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-start gap-2">
+                <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-red-500" />
                 <span>
                   <strong className="uppercase font-display tracking-wider block">Watch Out:</strong>
                   {selectedExercise.watchOutWarning}
@@ -665,7 +757,7 @@ export default function Home() {
         <RoutineEditor
           currentRoutine={routine}
           onClose={() => setIsEditorOpen(false)}
-          onSave={(updated) => setRoutine(updated)}
+          onSave={handleSaveRoutine}
         />
       )}
     </div>
