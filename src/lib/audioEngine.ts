@@ -151,6 +151,10 @@ class AudioEngine {
       // Ignore
     }
   }
+
+  public playRoundComplete(enabled: boolean): void {
+    this.playCompletionFanfare(enabled);
+  }
 }
 
 export const audioEngine = new AudioEngine();

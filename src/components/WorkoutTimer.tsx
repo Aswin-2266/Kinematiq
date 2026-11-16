@@ -98,68 +98,68 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
       const activeName = useAlternative && currentExercise.alternative
         ? currentExercise.alternative.name
         : currentExercise.name;
-      voiceCoach.announceExerciseStart(activeName, routine.workDurationSeconds, voiceEnabled);
+      voiceCoach.speak(`Round ${currentRound}. Begin ${activeName}`, voiceEnabled);
     } else if (phase === "work") {
       const isLastExerciseInRound = currentExerciseIndex === routine.exercises.length - 1;
+      const isLastRound = currentRound === routine.totalRounds;
 
-      if (isLastExerciseInRound) {
-        if (currentRound >= routine.totalRounds) {
-          setPhase("completed");
-          setIsRunning(false);
-          audioEngine.playCompletionFanfare(soundEnabled);
-          voiceCoach.announceWorkoutComplete(voiceEnabled);
+      if (isLastExerciseInRound && isLastRound) {
+        setPhase("completed");
+        audioEngine.playRoundComplete(soundEnabled);
+        voiceCoach.speak("Workout complete! Outstanding effort.", voiceEnabled);
 
-          const session: WorkoutSession = {
-            id: `session_${Date.now()}`,
-            routineTitle: routine.title,
-            startedAt: new Date(Date.now() - totalSecondsElapsed * 1000).toISOString(),
-            completedAt: new Date().toISOString(),
-            totalSeconds: totalSecondsElapsed,
-            completedRounds: routine.totalRounds,
-            completedExercises: routine.exercises.length * routine.totalRounds,
-            estimatedCalories: Math.round((totalSecondsElapsed / 60) * 9.5),
-            syncedToCloud: false,
-          };
-
-          saveLocalSession(session);
-          if (onComplete) onComplete(session);
-        } else {
-          setPhase("round-break");
-          setSecondsRemaining(routine.roundBreakDurationSeconds);
-          audioEngine.playRestTone(soundEnabled);
-          voiceCoach.announceRoundBreak(currentRound, routine.totalRounds, routine.roundBreakDurationSeconds, voiceEnabled);
-        }
+        const newSession: WorkoutSession = {
+          id: `sess_${Date.now()}`,
+          routineTitle: routine.title,
+          startedAt: new Date(Date.now() - (totalSecondsElapsed + 1) * 1000).toISOString(),
+          completedAt: new Date().toISOString(),
+          totalSeconds: totalSecondsElapsed + 1,
+          completedRounds: routine.totalRounds,
+          completedExercises: routine.exercises.length * routine.totalRounds,
+          estimatedCalories: Math.round(((totalSecondsElapsed + 1) / 60) * 11.5),
+          syncedToCloud: false,
+        };
+        saveLocalSession(newSession);
+        if (onComplete) onComplete(newSession);
+      } else if (isLastExerciseInRound) {
+        setPhase("round-break");
+        setSecondsRemaining(routine.roundBreakDurationSeconds);
+        audioEngine.playRestTone(soundEnabled);
+        voiceCoach.speak(
+          `Round ${currentRound} complete! Take a 60 second break. Next up is ${routine.exercises[0].name}`,
+          voiceEnabled
+        );
       } else {
         setPhase("rest");
         setSecondsRemaining(routine.restDurationSeconds);
         audioEngine.playRestTone(soundEnabled);
-        voiceCoach.announceRest(nextExercise.name, routine.restDurationSeconds, voiceEnabled);
+        voiceCoach.speak(`Rest! Up next: ${nextExercise.name}`, voiceEnabled);
       }
     } else if (phase === "rest") {
+      setPhase("work");
       setCurrentExerciseIndex((prev) => prev + 1);
+      setSecondsRemaining(routine.workDurationSeconds);
       setUseAlternative(false);
       setUseRegression(false);
-      setPhase("work");
-      setSecondsRemaining(routine.workDurationSeconds);
       audioEngine.playStartChime(soundEnabled);
-      voiceCoach.announceExerciseStart(nextExercise.name, routine.workDurationSeconds, voiceEnabled);
+      voiceCoach.speak(`Begin ${nextExercise.name}`, voiceEnabled);
     } else if (phase === "round-break") {
+      setPhase("work");
       setCurrentRound((prev) => prev + 1);
       setCurrentExerciseIndex(0);
+      setSecondsRemaining(routine.workDurationSeconds);
       setUseAlternative(false);
       setUseRegression(false);
-      setPhase("work");
-      setSecondsRemaining(routine.workDurationSeconds);
       audioEngine.playStartChime(soundEnabled);
-      voiceCoach.announceExerciseStart(routine.exercises[0].name, routine.workDurationSeconds, voiceEnabled);
+      voiceCoach.speak(`Round ${currentRound + 1}. Begin ${routine.exercises[0].name}`, voiceEnabled);
     }
   }, [
     phase,
-    routine,
     currentExerciseIndex,
     currentRound,
     currentExercise,
     nextExercise,
+    routine,
     soundEnabled,
     voiceEnabled,
     useAlternative,
@@ -167,6 +167,7 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     onComplete,
   ]);
 
+  // Main 1-second interval state machine loop
   useEffect(() => {
     if (!isRunning || phase === "completed") {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -185,7 +186,6 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
           transitionToNextPhase();
           return 0;
         }
-
         return prev - 1;
       });
     }, 1000);
@@ -193,21 +193,18 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isRunning, phase, soundEnabled, transitionToNextPhase]);
+  }, [isRunning, phase, transitionToNextPhase, soundEnabled]);
 
   const handleSkipForward = () => {
     transitionToNextPhase();
   };
 
   const handleSkipBack = () => {
-    if (phase === "rest" || phase === "round-break") {
-      setPhase("work");
+    if (phase === "work") {
       setSecondsRemaining(routine.workDurationSeconds);
     } else if (currentExerciseIndex > 0) {
       setCurrentExerciseIndex((prev) => prev - 1);
       setPhase("work");
-      setSecondsRemaining(routine.workDurationSeconds);
-    } else {
       setSecondsRemaining(routine.workDurationSeconds);
     }
   };
@@ -233,83 +230,103 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
   }[phase];
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#080B11] text-[#F8FAFC] flex flex-col justify-between p-4 md:p-8 max-w-5xl mx-auto overflow-y-scroll [scrollbar-gutter:stable] select-none">
-      {/* Top Tactical HUD Bar */}
-      <header className="flex items-center justify-between py-2 border-b border-[#1E2B42]">
-        {/* Round Badge */}
-        <div className="flex items-center gap-3">
-          <div className="px-3.5 py-1.5 rounded-lg bg-[#0F1624] border border-[#1E2B42] text-xs md:text-sm font-display font-bold tracking-wider flex items-center gap-2 uppercase">
-            <Zap className="w-4 h-4 text-orange-500 fill-current" />
-            <span>
-              ROUND {currentRound} / {routine.totalRounds}
+    <div className="fixed inset-0 z-50 bg-[#080B11] text-[#F8FAFC] flex flex-col justify-between overflow-y-auto [scrollbar-gutter:stable] select-none w-full min-h-screen">
+      {/* 1. FULL-WIDTH TOP TACTICAL HUD BAR */}
+      <header className="w-full border-b border-[#1E2B42] bg-[#0A0E18]/95 backdrop-blur-md sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between w-full">
+          {/* Round Badge & Elapsed Timer */}
+          <div className="flex items-center gap-3">
+            <div className="px-3.5 py-1.5 rounded-lg bg-[#0F1624] border border-[#1E2B42] text-xs md:text-sm font-display font-bold tracking-wider flex items-center gap-2 uppercase">
+              <Zap className="w-4 h-4 text-orange-500 fill-current" />
+              <span>
+                ROUND {currentRound} / {routine.totalRounds}
+              </span>
+            </div>
+
+            <span className="text-sm font-mono font-bold text-slate-400">
+              {formatTime(totalSecondsElapsed)}
             </span>
           </div>
 
-          <span className="text-sm font-mono font-bold text-slate-400">
-            {formatTime(totalSecondsElapsed)}
-          </span>
-        </div>
+          {/* Desktop Breadcrumbs Sequence (All 6 Exercises in Current Round) */}
+          <div className="hidden lg:flex items-center gap-2">
+            {routine.exercises.map((ex, i) => (
+              <span
+                key={ex.id}
+                className={`px-2.5 py-1 rounded text-[11px] font-display font-bold uppercase tracking-wider transition-all ${
+                  i === currentExerciseIndex && phase !== "completed"
+                    ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
+                    : i < currentExerciseIndex
+                    ? "text-emerald-500/80 bg-emerald-500/10 border border-emerald-500/20"
+                    : "text-slate-500 bg-[#0F1624] border border-[#1E2B42]"
+                }`}
+              >
+                0{i + 1} {ex.name.split(" ")[0]}
+              </span>
+            ))}
+          </div>
 
-        {/* Audio Controls & Exit */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={toggleSound}
-            className={`p-2.5 rounded-xl border transition-all ${
-              soundEnabled
-                ? "bg-emerald-500/15 border-emerald-500 text-emerald-500"
-                : "bg-[#0F1624] border-[#1E2B42] text-slate-500 hover:border-emerald-500/30"
-            }`}
-            title={soundEnabled ? "Audio: ON" : "Audio: OFF"}
-            aria-label="Toggle Sound"
-          >
-            {soundEnabled ? <Volume2 className="w-4 h-4 md:w-5 md:h-5" /> : <VolumeX className="w-4 h-4 md:w-5 md:h-5" />}
-          </button>
+          {/* Audio Controls & Exit */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleSound}
+              className={`p-2.5 rounded-xl border transition-all ${
+                soundEnabled
+                  ? "bg-emerald-500/15 border-emerald-500 text-emerald-500"
+                  : "bg-[#0F1624] border-[#1E2B42] text-slate-500 hover:border-emerald-500/30"
+              }`}
+              title={soundEnabled ? "Audio: ON" : "Audio: OFF"}
+              aria-label="Toggle Sound"
+            >
+              {soundEnabled ? <Volume2 className="w-4 h-4 md:w-5 md:h-5" /> : <VolumeX className="w-4 h-4 md:w-5 md:h-5" />}
+            </button>
 
-          <button
-            onClick={toggleVoice}
-            className={`p-2.5 rounded-xl border transition-all ${
-              voiceEnabled
-                ? "bg-orange-500/15 border-orange-500 text-orange-500"
-                : "bg-[#0F1624] border-[#1E2B42] text-slate-500 hover:border-orange-500/30"
-            }`}
-            title={voiceEnabled ? "Voice: ON" : "Voice: OFF"}
-            aria-label="Toggle Voice Coach"
-          >
-            {voiceEnabled ? <Mic className="w-4 h-4 md:w-5 md:h-5" /> : <MicOff className="w-4 h-4 md:w-5 md:h-5" />}
-          </button>
+            <button
+              onClick={toggleVoice}
+              className={`p-2.5 rounded-xl border transition-all ${
+                voiceEnabled
+                  ? "bg-orange-500/15 border-orange-500 text-orange-500"
+                  : "bg-[#0F1624] border-[#1E2B42] text-slate-500 hover:border-orange-500/30"
+              }`}
+              title={voiceEnabled ? "Voice: ON" : "Voice: OFF"}
+              aria-label="Toggle Voice Coach"
+            >
+              {voiceEnabled ? <Mic className="w-4 h-4 md:w-5 md:h-5" /> : <MicOff className="w-4 h-4 md:w-5 md:h-5" />}
+            </button>
 
-          <button
-            onClick={onExit}
-            className="p-2.5 rounded-xl bg-[#0F1624] border border-[#1E2B42] text-slate-400 hover:text-red-400 transition-colors"
-            title="Exit Workout"
-            aria-label="Exit Workout"
-          >
-            <X className="w-5 h-5" />
-          </button>
+            <button
+              onClick={onExit}
+              className="p-2.5 rounded-xl bg-[#0F1624] border border-[#1E2B42] text-slate-400 hover:text-red-400 transition-colors"
+              title="Exit Workout"
+              aria-label="Exit Workout"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Main Interval Display Area: Responsive 1-col on Mobile, 2-col on Laptop/Desktop */}
-      <main className="flex-1 flex flex-col justify-center py-4">
+      {/* 2. FULL-WIDTH RESPONSIVE MAIN INTERVAL DISPLAY */}
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 flex flex-col justify-center">
         {phase === "completed" ? (
           /* WORKOUT COMPLETED CELEBRATION */
-          <div className="w-full max-w-lg mx-auto flex flex-col items-center text-center gap-4 py-8 animate-fade-in">
-            <div className="w-20 h-20 rounded-2xl bg-emerald-500/10 border-2 border-emerald-500 flex items-center justify-center text-emerald-500 shadow-2xl shadow-emerald-500/20">
-              <Award className="w-10 h-10" />
+          <div className="w-full max-w-xl mx-auto flex flex-col items-center text-center gap-6 py-8 animate-fade-in bg-[#0F1624] border border-[#1E2B42] rounded-3xl p-8 shadow-2xl">
+            <div className="w-24 h-24 rounded-3xl bg-emerald-500/10 border-2 border-emerald-500 flex items-center justify-center text-emerald-500 shadow-2xl shadow-emerald-500/20">
+              <Award className="w-12 h-12" />
             </div>
 
             <div>
-              <h2 className="text-3xl md:text-4xl font-display font-black tracking-wide text-white uppercase">
+              <h2 className="text-3xl md:text-5xl font-display font-black tracking-wide text-white uppercase">
                 CIRCUIT COMPLETE
               </h2>
-              <p className="text-sm md:text-base text-slate-400 mt-1">
-                Crushed all {routine.totalRounds} rounds of the protocol.
+              <p className="text-sm md:text-base text-slate-400 mt-2 max-w-md">
+                Outstanding discipline! You crushed all {routine.totalRounds} rounds of the protocol.
               </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 w-full my-3">
-              <div className="p-4 rounded-2xl bg-[#0F1624] border border-[#1E2B42]">
-                <span className="block text-2xl md:text-3xl font-display font-bold text-orange-500">
+            <div className="grid grid-cols-3 gap-3 w-full my-2">
+              <div className="p-4 rounded-2xl bg-[#080B11] border border-[#1E2B42]">
+                <span className="block text-2xl md:text-4xl font-display font-black text-orange-500">
                   {formatTime(totalSecondsElapsed)}
                 </span>
                 <span className="text-[10px] md:text-xs font-display font-bold uppercase text-slate-500 tracking-wider">
@@ -317,8 +334,8 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
                 </span>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#0F1624] border border-[#1E2B42]">
-                <span className="block text-2xl md:text-3xl font-display font-bold text-emerald-500">
+              <div className="p-4 rounded-2xl bg-[#080B11] border border-[#1E2B42]">
+                <span className="block text-2xl md:text-4xl font-display font-black text-emerald-500">
                   {routine.totalRounds}
                 </span>
                 <span className="text-[10px] md:text-xs font-display font-bold uppercase text-slate-500 tracking-wider">
@@ -326,9 +343,9 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
                 </span>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#0F1624] border border-[#1E2B42]">
-                <span className="block text-2xl md:text-3xl font-display font-bold text-blue-500">
-                  ~{Math.round((totalSecondsElapsed / 60) * 9.5)}
+              <div className="p-4 rounded-2xl bg-[#080B11] border border-[#1E2B42]">
+                <span className="block text-2xl md:text-4xl font-display font-black text-blue-500">
+                  ~{Math.round(((totalSecondsElapsed) / 60) * 11.5)}
                 </span>
                 <span className="text-[10px] md:text-xs font-display font-bold uppercase text-slate-500 tracking-wider">
                   CALORIES
@@ -338,24 +355,25 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
 
             <button
               onClick={onExit}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-display font-bold tracking-wider text-base md:text-lg flex items-center justify-center gap-2 shadow-xl shadow-orange-500/25 active:scale-[0.98] transition-transform"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-display font-black tracking-wider text-base md:text-lg flex items-center justify-center gap-2 shadow-xl shadow-orange-500/25 active:scale-[0.98] transition-transform"
             >
               <CheckCircle className="w-5 h-5" />
-              <span>LOG SESSION & EXIT</span>
+              <span>LOG SESSION & RETURN TO DASHBOARD</span>
             </button>
           </div>
         ) : (
           /* ACTIVE INTERVAL HUD: Split Grid on Desktop, Stacked on Mobile */
-          <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-            {/* LEFT PANEL: Circular Countdown Timer & Primary Controls */}
-            <div className="md:col-span-5 flex flex-col items-center justify-center gap-3">
+          <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            {/* LEFT STAGE (5 COLS): Circular Countdown Timer & Desktop Controller Bar */}
+            <div className="lg:col-span-5 flex flex-col items-center justify-center gap-4">
               {/* Tactical Interval Banner */}
               <div
-                className={`px-4 py-1.5 rounded text-xs font-display font-bold uppercase tracking-widest border transition-all ${
+                className={`px-5 py-2 rounded-lg text-xs md:text-sm font-display font-bold uppercase tracking-widest border transition-all ${
                   phase === "work"
-                    ? "bg-orange-500/15 border-orange-500 text-orange-500 animate-pulse"
+                    ? "bg-orange-500/15 border-orange-500 text-orange-500 animate-pulse shadow-lg shadow-orange-500/10"
                     : phase === "rest"
-                    ? "bg-emerald-500/15 border-emerald-500 text-emerald-500"
+                    ? "bg-emerald-500/15 border-emerald-500 text-emerald-500 shadow-lg shadow-emerald-500/10"
                     : phase === "round-break"
                     ? "bg-blue-500/15 border-blue-500 text-blue-500"
                     : "bg-amber-500/15 border-amber-500 text-amber-500"
@@ -371,14 +389,14 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
               </div>
 
               {/* Giant Circular Digital Bezel */}
-              <div className="relative w-48 h-48 md:w-56 md:h-56 flex items-center justify-center my-1">
+              <div className="relative w-56 h-56 sm:w-64 sm:h-64 lg:w-80 lg:h-80 flex items-center justify-center my-2">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
                   <circle
                     cx="50"
                     cy="50"
                     r="45"
                     className="stroke-[#162033]"
-                    strokeWidth="7"
+                    strokeWidth="6"
                     fill="none"
                   />
                   <circle
@@ -386,7 +404,7 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
                     cy="50"
                     r="45"
                     className={`transition-all duration-300 ${phaseColors}`}
-                    strokeWidth="7"
+                    strokeWidth="6"
                     strokeDasharray="283"
                     strokeDashoffset={strokeDashoffset}
                     strokeLinecap="round"
@@ -396,17 +414,17 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
 
                 {/* Huge High-Impact Oswald Numerals */}
                 <div className="absolute flex flex-col items-center justify-center">
-                  <span className="text-7xl md:text-8xl font-display font-black tracking-tight text-white leading-none">
+                  <span className="text-8xl sm:text-9xl font-display font-black tracking-tight text-white leading-none">
                     {secondsRemaining}
                   </span>
-                  <span className="text-[10px] md:text-xs font-display font-bold uppercase tracking-widest text-slate-400 mt-1">
+                  <span className="text-xs font-display font-bold uppercase tracking-widest text-slate-400 mt-1">
                     SECONDS
                   </span>
                 </div>
               </div>
 
               {/* Tactical Controller Bar for Desktop/Laptop */}
-              <div className="w-full hidden md:flex items-center justify-between gap-3 mt-2">
+              <div className="w-full max-w-sm hidden md:flex items-center justify-between gap-3 mt-2">
                 <button
                   onClick={handleSkipBack}
                   className="w-14 h-14 rounded-xl bg-[#0F1624] border border-[#1E2B42] flex items-center justify-center text-slate-300 active:scale-95 transition-transform hover:border-orange-500/40"
@@ -448,18 +466,18 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
               </div>
             </div>
 
-            {/* RIGHT PANEL: Dynamic View (Visual Guide + Form Coach during WORK, UpNext during REST) */}
-            <div className="md:col-span-7 w-full flex flex-col gap-3">
+            {/* RIGHT STAGE (7 COLS): Dynamic Movement Guide & Live Form Coach / UpNext */}
+            <div className="lg:col-span-7 w-full flex flex-col gap-4">
               {phase === "rest" || phase === "round-break" ? (
                 <div className="w-full">
                   {phase === "round-break" ? (
-                    <div className="p-6 rounded-3xl bg-[#0F1624] border border-blue-500/30 text-center flex flex-col items-center gap-3">
-                      <Coffee className="w-10 h-10 text-blue-500" />
-                      <h3 className="text-xl md:text-2xl font-display font-bold tracking-wide text-white uppercase">
+                    <div className="p-8 rounded-3xl bg-[#0F1624] border border-blue-500/30 text-center flex flex-col items-center gap-4 shadow-xl">
+                      <Coffee className="w-12 h-12 text-blue-500" />
+                      <h3 className="text-2xl md:text-3xl font-display font-black tracking-wide text-white uppercase">
                         ROUND {currentRound} RECOVERY
                       </h3>
-                      <p className="text-xs md:text-sm text-slate-300 max-w-sm">
-                        Rehydrate and steady your breathing. Round {currentRound + 1} begins with{" "}
+                      <p className="text-sm md:text-base text-slate-300 max-w-md leading-relaxed">
+                        Rehydrate, steady your breathing, and lower your heart rate. Round {currentRound + 1} begins with{" "}
                         <span className="font-bold text-orange-500">
                           {routine.exercises[0].name}
                         </span>
@@ -471,7 +489,7 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
                   )}
                 </div>
               ) : (
-                <div className="w-full flex flex-col gap-3">
+                <div className="w-full flex flex-col gap-4">
                   <VisualExerciseGuide
                     exercise={currentExercise}
                     isAlternative={useAlternative}
@@ -493,9 +511,9 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
         )}
       </main>
 
-      {/* Mobile-Only Bottom Sticky Controller Bar (Hidden on Desktop because it is beside timer) */}
+      {/* Mobile-Only Bottom Sticky Controller Bar */}
       {phase !== "completed" && (
-        <footer className="sticky bottom-0 pt-3 pb-2 bg-[#080B11] border-t border-[#1E2B42] flex md:hidden items-center justify-between gap-3">
+        <footer className="sticky bottom-0 pt-3 pb-3 bg-[#080B11] border-t border-[#1E2B42] flex md:hidden items-center justify-between gap-3 px-4">
           <button
             onClick={handleSkipBack}
             className="w-14 h-14 rounded-xl bg-[#0F1624] border border-[#1E2B42] flex items-center justify-center text-slate-300 active:scale-95 transition-transform hover:border-orange-500/40"

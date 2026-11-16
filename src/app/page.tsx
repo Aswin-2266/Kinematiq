@@ -12,31 +12,39 @@ import {
   ShieldAlert, 
   Smartphone, 
   Play, 
-  ChevronRight, 
   Award, 
   History, 
   Sliders, 
   User as UserIcon, 
   CheckCircle2,
   Target,
-  Sparkles
+  Sparkles,
+  Zap,
+  Clock,
+  Dumbbell,
+  HeartPulse,
+  Info,
+  ChevronRight,
+  TrendingUp,
+  Activity
 } from "lucide-react";
 import { DEFAULT_ROUTINE } from "@/data/defaultRoutine";
 import { WorkoutTimer } from "@/components/WorkoutTimer";
 import { AuthModal } from "@/components/AuthModal";
 import { RoutineEditor } from "@/components/RoutineEditor";
 import { getLocalSessions, syncPendingSessions } from "@/lib/offlineQueue";
-import { WorkoutSession, Routine, User } from "@/types";
+import { WorkoutSession, Routine, User, Exercise } from "@/types";
 import { formatTime } from "@/lib/utils";
 
 export default function Home() {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
-  const [soundEnabled, setSoundEnabled] = useState(false); // Default OFF
-  const [voiceEnabled, setVoiceEnabled] = useState(false); // Default OFF
+  const [soundEnabled, setSoundEnabled] = useState(false); // Default OFF per AGENTS.md
+  const [voiceEnabled, setVoiceEnabled] = useState(false); // Default OFF per AGENTS.md
   const [isWorkingOut, setIsWorkingOut] = useState(false);
   const [routine, setRoutine] = useState<Routine>(DEFAULT_ROUTINE);
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
 
   // Modals
   const [isAuthOpen, setIsAuthOpen] = useState(false);
@@ -93,273 +101,543 @@ export default function Home() {
     setIsAuthOpen(false);
   };
 
+  // Calculations for stats
+  const totalDurationMinutes = Math.round(
+    ((routine.workDurationSeconds + routine.restDurationSeconds) * routine.exercises.length * routine.totalRounds) / 60
+  );
+  const estCalories = Math.round(totalDurationMinutes * 11.5);
+  const totalWorkoutsCount = sessions.length;
+  const totalMinutesTrained = Math.round(sessions.reduce((acc, s) => acc + s.totalSeconds, 0) / 60);
+
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col justify-between p-4 md:p-8 max-w-5xl mx-auto transition-colors duration-150 [scrollbar-gutter:stable]">
-      {/* Tactical Top Bar */}
-      <header className="flex items-center justify-between py-3 md:py-4 border-b border-[var(--border-subtle)]">
-        <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/25">
-            <Flame className="w-5 h-5 md:w-6 md:h-6 fill-current" />
-          </div>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-display font-black tracking-wider uppercase text-[var(--text-primary)] leading-none">
-              KINEMATIQ
-            </h1>
-            <p className="text-[10px] md:text-xs font-display font-bold text-orange-500 tracking-widest uppercase mt-0.5">
-              INTERVAL PROTOCOL
-            </p>
-          </div>
-        </div>
-
-        {/* Global Control Toggles */}
-        <div className="flex items-center gap-2">
-          {/* Sound Toggle (Default OFF) */}
-          <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            className={`p-2.5 rounded-xl border transition-all ${
-              soundEnabled
-                ? "bg-emerald-500/15 border-emerald-500 text-emerald-500"
-                : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-orange-500/30"
-            }`}
-            title={soundEnabled ? "Audio Sound: ON" : "Audio Sound: OFF (Tap to enable)"}
-            aria-label="Toggle Sound"
-          >
-            {soundEnabled ? <Volume2 className="w-4 h-4 md:w-5 md:h-5" /> : <VolumeX className="w-4 h-4 md:w-5 md:h-5" />}
-          </button>
-
-          {/* Voice Coach Toggle (Default OFF) */}
-          <button
-            onClick={() => setVoiceEnabled(!voiceEnabled)}
-            className={`p-2.5 rounded-xl border transition-all ${
-              voiceEnabled
-                ? "bg-orange-500/15 border-orange-500 text-orange-500"
-                : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-orange-500/30"
-            }`}
-            title={voiceEnabled ? "Voice Coach: ON" : "Voice Coach: OFF (Tap to enable)"}
-            aria-label="Toggle Voice Coach"
-          >
-            {voiceEnabled ? <Mic className="w-4 h-4 md:w-5 md:h-5" /> : <MicOff className="w-4 h-4 md:w-5 md:h-5" />}
-          </button>
-
-          {/* Theme Switcher */}
-          <button
-            onClick={toggleTheme}
-            className="p-2.5 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] hover:border-orange-500/40 transition-all"
-            title={`Switch to ${theme === "dark" ? "Light" : "Dark"} Mode`}
-            aria-label="Toggle Theme"
-          >
-            {theme === "dark" ? <Sun className="w-4 h-4 md:w-5 md:h-5 text-amber-400" /> : <Moon className="w-4 h-4 md:w-5 md:h-5 text-slate-700" />}
-          </button>
-
-          {/* User Account / Profile */}
-          <button
-            onClick={() => setIsAuthOpen(true)}
-            className={`p-2.5 rounded-xl border transition-all ${
-              currentUser
-                ? "bg-gradient-to-tr from-orange-500 to-amber-500 text-white font-display font-bold text-xs md:text-sm px-3 flex items-center gap-1.5"
-                : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-primary)] hover:border-orange-500/40"
-            }`}
-            title={currentUser ? `Signed in as ${currentUser.name}` : "Sign In to sync with MongoDB"}
-            aria-label="Account Settings"
-          >
-            {currentUser ? (
-              <>
-                <span className="w-4 h-4 md:w-5 md:h-5 flex items-center justify-center font-black">
-                  {currentUser.name.charAt(0).toUpperCase()}
-                </span>
-                <span className="hidden md:inline font-display text-xs">{currentUser.name}</span>
-              </>
-            ) : (
-              <UserIcon className="w-4 h-4 md:w-5 md:h-5 text-[var(--text-muted)]" />
-            )}
-          </button>
-        </div>
-      </header>
-
-      {/* Responsive Main Content: 1-col on Mobile, 2-col Widescreen on Laptop/Desktop */}
-      <main className="flex-1 py-6 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-        {/* LEFT COLUMN: Hero Circuit Card & Workout History */}
-        <div className="md:col-span-6 flex flex-col gap-5">
-          {/* Hero Circuit Card */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[var(--bg-surface)] to-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] p-6 shadow-2xl">
-            {/* Tactical Badge & Customize Link */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-orange-500/10 border border-orange-500/30 text-orange-500 text-[11px] font-display font-bold uppercase tracking-widest">
-                <Target className="w-3.5 h-3.5" />
-                <span>PROTOCOL // FULL-BODY</span>
-              </div>
-
-              <button
-                onClick={() => setIsEditorOpen(true)}
-                className="inline-flex items-center gap-1 text-xs font-display font-bold uppercase tracking-wider text-orange-500 hover:text-orange-400 transition-colors"
-              >
-                <Sliders className="w-3.5 h-3.5" />
-                <span>CUSTOMIZE</span>
-              </button>
+    <div className="min-h-screen w-full bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col justify-between transition-colors duration-150 [scrollbar-gutter:stable]">
+      {/* 1. FULL-WIDTH EDGE-TO-EDGE TOP NAVIGATION */}
+      <header className="w-full border-b border-[var(--border-subtle)] bg-[var(--bg-primary)]/90 backdrop-blur-md sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+          {/* Logo & Brand Identity */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/25 shrink-0">
+              <Flame className="w-5 h-5 fill-current" />
             </div>
-
-            <h2 className="text-3xl md:text-4xl font-display font-black tracking-wide text-[var(--text-primary)] mb-2 uppercase">
-              {routine.title}
-            </h2>
-
-            <p className="text-xs md:text-sm text-[var(--text-secondary)] mb-4 leading-relaxed font-sans">
-              {routine.description}
-            </p>
-
-            {/* Quick Metrics Grid */}
-            <div className="grid grid-cols-3 gap-3 my-4">
-              <div className="p-3.5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
-                <span className="block text-2xl md:text-3xl font-display font-black text-orange-500">
-                  {routine.workDurationSeconds}S
-                </span>
-                <span className="text-[10px] md:text-xs font-display font-bold text-[var(--text-muted)] uppercase tracking-wider">
-                  WORK
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-display font-black tracking-wider uppercase text-[var(--text-primary)] leading-none">
+                  KINEMATIQ
+                </h1>
+                <span className="hidden sm:inline-block text-[10px] font-display font-bold px-2 py-0.5 rounded bg-orange-500/10 text-orange-500 border border-orange-500/30 uppercase tracking-widest">
+                  INTERVAL PROTOCOL
                 </span>
               </div>
-              <div className="p-3.5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
-                <span className="block text-2xl md:text-3xl font-display font-black text-emerald-500">
-                  {routine.restDurationSeconds}S
-                </span>
-                <span className="text-[10px] md:text-xs font-display font-bold text-[var(--text-muted)] uppercase tracking-wider">
-                  REST
-                </span>
-              </div>
-              <div className="p-3.5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
-                <span className="block text-2xl md:text-3xl font-display font-black text-blue-500">
-                  {routine.totalRounds}
-                </span>
-                <span className="text-[10px] md:text-xs font-display font-bold text-[var(--text-muted)] uppercase tracking-wider">
-                  ROUNDS
-                </span>
-              </div>
-            </div>
-
-            {/* DIRECT START WORKOUT CTA */}
-            <button
-              onClick={() => setIsWorkingOut(true)}
-              className="w-full py-4 mt-2 px-6 rounded-2xl bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 text-white font-display font-black tracking-wider text-lg md:text-xl flex items-center justify-center gap-2.5 shadow-xl shadow-orange-500/30 active:scale-[0.98] transition-transform hover:brightness-105"
-            >
-              <Play className="w-5 h-5 fill-current" />
-              <span>START WORKOUT ({routine.totalRounds} ROUNDS)</span>
-            </button>
-
-            {/* Pro-Tip Quote */}
-            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs leading-relaxed flex items-start gap-2.5 mt-4">
-              <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
-              <div>
-                <span className="font-display font-bold uppercase tracking-wider block mb-0.5">
-                  FOCUS ON FORM OVER SPEED:
-                </span>
-                <span className="text-xs text-slate-300">
-                  Controlled repetitions with proper tension build muscle faster than sloppy, rushed reps.
-                </span>
-              </div>
+              <p className="text-[11px] text-[var(--text-muted)] font-sans hidden sm:block mt-0.5">
+                Precision Bodyweight HIIT & Functional Circuit Conditioning
+              </p>
             </div>
           </div>
 
-          {/* Previous Workouts / History Section */}
-          {sessions.length > 0 && (
-            <div className="flex flex-col gap-2.5">
-              <div className="flex items-center justify-between px-1">
-                <h3 className="text-xs font-display font-bold uppercase tracking-widest text-[var(--text-muted)] flex items-center gap-1.5">
-                  <History className="w-3.5 h-3.5" />
-                  <span>WORKOUT HISTORY</span>
-                </h3>
-                <span className="text-xs font-display font-bold text-emerald-500 tracking-wider">
-                  {sessions.length} COMPLETED
-                </span>
-              </div>
-
-              <div className="grid grid-cols-1 gap-2">
-                {sessions.slice(0, 4).map((s) => (
-                  <div
-                    key={s.id}
-                    className="flex items-center justify-between p-3.5 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                        <Award className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <span className="font-display font-bold text-sm block text-[var(--text-primary)] uppercase tracking-wide">
-                          {s.routineTitle}
-                        </span>
-                        <span className="text-[10px] text-[var(--text-muted)] font-mono">
-                          {new Date(s.completedAt).toLocaleDateString()} • {formatTime(s.totalSeconds)}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <span className="font-display font-bold text-sm text-orange-500 block">
-                        ~{s.estimatedCalories} KCAL
-                      </span>
-                      <span className="text-[9px] text-emerald-500 flex items-center justify-end gap-0.5 font-display font-semibold uppercase">
-                        <CheckCircle2 className="w-2.5 h-2.5" />
-                        SAVED
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* RIGHT COLUMN: 6 Exercises in Circuit */}
-        <div className="md:col-span-6 flex flex-col gap-3">
-          <div className="flex items-center justify-between px-1">
-            <h3 className="text-xs font-display font-bold uppercase tracking-widest text-[var(--text-muted)]">
-              CIRCUIT MOVEMENT SEQUENCE ({routine.exercises.length} EXERCISES)
-            </h3>
-            <span className="text-xs font-display font-bold text-orange-500 tracking-wider">
-              ~{Math.round(((routine.workDurationSeconds + routine.restDurationSeconds) * routine.exercises.length * routine.totalRounds) / 60)} MINS TOTAL
+          {/* Center Protocol Telemetry (Desktop Only) */}
+          <div className="hidden lg:flex items-center gap-6 px-4 py-1.5 rounded-full bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs font-display font-bold text-[var(--text-secondary)]">
+            <span className="flex items-center gap-1.5 text-orange-500">
+              <Zap className="w-3.5 h-3.5 fill-current" />
+              <span>3 ROUNDS</span>
+            </span>
+            <span className="text-[var(--border-subtle)]">•</span>
+            <span className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <span>40S WORK / 20S REST</span>
+            </span>
+            <span className="text-[var(--border-subtle)]">•</span>
+            <span className="flex items-center gap-1.5 text-emerald-500">
+              <Dumbbell className="w-3.5 h-3.5" />
+              <span>NO GEAR NEEDED</span>
             </span>
           </div>
 
-          <div className="flex flex-col gap-2.5">
-            {routine.exercises.map((ex, idx) => (
-              <div
-                key={ex.id}
-                className="flex items-center justify-between p-4 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-orange-500/40 transition-all shadow-sm"
+          {/* Right Action & Control Toggles */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Audio Toggle (Default OFF) */}
+            <button
+              onClick={() => setSoundEnabled(!soundEnabled)}
+              className={`px-3 py-2 rounded-xl border flex items-center gap-2 transition-all ${
+                soundEnabled
+                  ? "bg-emerald-500/15 border-emerald-500 text-emerald-500 shadow-sm shadow-emerald-500/10"
+                  : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-orange-500/30"
+              }`}
+              title={soundEnabled ? "Audio Chimes: ON" : "Audio Chimes: OFF (Tap to enable Web Audio)"}
+              aria-label="Toggle Sound"
+            >
+              {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-500" /> : <VolumeX className="w-4 h-4" />}
+              <span className="hidden md:inline font-display text-xs font-bold uppercase tracking-wider">
+                {soundEnabled ? "Sound: ON" : "Sound: OFF"}
+              </span>
+            </button>
+
+            {/* Voice Coach Toggle (Default OFF) */}
+            <button
+              onClick={() => setVoiceEnabled(!voiceEnabled)}
+              className={`px-3 py-2 rounded-xl border flex items-center gap-2 transition-all ${
+                voiceEnabled
+                  ? "bg-orange-500/15 border-orange-500 text-orange-500 shadow-sm shadow-orange-500/10"
+                  : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-orange-500/30"
+              }`}
+              title={voiceEnabled ? "Voice Coach: ON" : "Voice Coach: OFF (Tap to enable speech synthesis)"}
+              aria-label="Toggle Voice Coach"
+            >
+              {voiceEnabled ? <Mic className="w-4 h-4 text-orange-500" /> : <MicOff className="w-4 h-4" />}
+              <span className="hidden md:inline font-display text-xs font-bold uppercase tracking-wider">
+                {voiceEnabled ? "Voice: ON" : "Voice: OFF"}
+              </span>
+            </button>
+
+            {/* Light / Dark Mode Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="p-2.5 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] hover:border-orange-500/40 transition-all"
+              title={`Switch to ${theme === "dark" ? "Light" : "Dark"} Mode`}
+              aria-label="Toggle Theme"
+            >
+              {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
+            </button>
+
+            {/* User Account / Profile Button */}
+            <button
+              onClick={() => setIsAuthOpen(true)}
+              className={`p-2 sm:px-3 sm:py-2 rounded-xl border transition-all flex items-center gap-2 ${
+                currentUser
+                  ? "bg-gradient-to-tr from-orange-500 to-amber-500 text-white font-display font-bold text-xs shadow-md shadow-orange-500/20"
+                  : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-primary)] hover:border-orange-500/40"
+              }`}
+              title={currentUser ? `Signed in as ${currentUser.name}` : "Sign In or Register"}
+              aria-label="Account Settings"
+            >
+              {currentUser ? (
+                <>
+                  <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-black text-xs">
+                    {currentUser.name.charAt(0).toUpperCase()}
+                  </span>
+                  <span className="hidden sm:inline font-display text-xs tracking-wide">{currentUser.name}</span>
+                </>
+              ) : (
+                <>
+                  <UserIcon className="w-4 h-4 text-[var(--text-muted)]" />
+                  <span className="hidden sm:inline font-display text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                    Sign In
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* 2. FULL-WIDTH RESPONSIVE MAIN CONTAINER */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8 w-full flex-1 flex flex-col gap-8">
+        
+        {/* A. WIDESCREEN HERO PROTOCOL COMMAND CENTER */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[var(--bg-surface)] via-[var(--bg-surface)] to-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] p-6 sm:p-8 lg:p-10 shadow-2xl">
+          {/* Ambient Kinetic Glow effect */}
+          <div className="absolute -top-32 -right-32 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="relative z-10 flex flex-col gap-6">
+            {/* Eyebrow & Actions */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/30 text-orange-500 text-xs font-display font-bold uppercase tracking-widest">
+                <Target className="w-4 h-4 text-orange-500" />
+                <span>GOLD-STANDARD FULL-BODY PROTOCOL // ZERO EQUIPMENT</span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsEditorOpen(true)}
+                  className="inline-flex items-center gap-1.5 text-xs font-display font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-orange-500 hover:border-orange-500/40 transition-colors"
+                >
+                  <Sliders className="w-3.5 h-3.5 text-orange-500" />
+                  <span>CUSTOMIZE INTERVALS</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Hero Titles & Synopsis */}
+            <div className="max-w-3xl">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display font-black tracking-wide text-[var(--text-primary)] uppercase leading-tight">
+                {routine.title}
+              </h2>
+              <p className="text-sm sm:text-base text-[var(--text-secondary)] mt-2.5 leading-relaxed font-sans">
+                {routine.description} Engineered around high mechanical tension and aerobic recovery intervals to maximize metabolic output, muscular stamina, and functional strength.
+              </p>
+            </div>
+
+            {/* Key Pacing Metrics Ribbon (4 Cards) */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 my-1">
+              <div className="p-4 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center transition-all hover:border-orange-500/30">
+                <span className="block text-3xl sm:text-4xl font-display font-black text-orange-500">
+                  {routine.workDurationSeconds}S
+                </span>
+                <span className="text-xs font-display font-bold text-[var(--text-muted)] uppercase tracking-wider block mt-0.5">
+                  WORK INTERVAL
+                </span>
+                <span className="text-[10px] text-[var(--text-muted)] hidden sm:block">Max Controlled Effort</span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center transition-all hover:border-emerald-500/30">
+                <span className="block text-3xl sm:text-4xl font-display font-black text-emerald-500">
+                  {routine.restDurationSeconds}S
+                </span>
+                <span className="text-xs font-display font-bold text-[var(--text-muted)] uppercase tracking-wider block mt-0.5">
+                  REST RECOVERY
+                </span>
+                <span className="text-[10px] text-[var(--text-muted)] hidden sm:block">Heart Rate Reset & Preview</span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center transition-all hover:border-blue-500/30">
+                <span className="block text-3xl sm:text-4xl font-display font-black text-blue-500">
+                  {routine.totalRounds}
+                </span>
+                <span className="text-xs font-display font-bold text-[var(--text-muted)] uppercase tracking-wider block mt-0.5">
+                  TOTAL ROUNDS
+                </span>
+                <span className="text-[10px] text-[var(--text-muted)] hidden sm:block">6 Movements Per Round</span>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center transition-all hover:border-amber-500/30">
+                <span className="block text-3xl sm:text-4xl font-display font-black text-amber-500">
+                  ~{totalDurationMinutes}M
+                </span>
+                <span className="text-xs font-display font-bold text-[var(--text-muted)] uppercase tracking-wider block mt-0.5">
+                  EST. DURATION
+                </span>
+                <span className="text-[10px] text-[var(--text-muted)] hidden sm:block">~{estCalories} kcal Metabolic Burn</span>
+              </div>
+            </div>
+
+            {/* Launch Action Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 mt-2">
+              <button
+                onClick={() => setIsWorkingOut(true)}
+                className="flex-1 py-4 sm:py-5 px-8 rounded-2xl bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 text-white font-display font-black tracking-wider text-lg sm:text-xl flex items-center justify-center gap-3 shadow-xl shadow-orange-500/30 active:scale-[0.98] transition-transform hover:brightness-105"
               >
-                <div className="flex items-center gap-3.5">
-                  <div className="w-9 h-9 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] flex items-center justify-center font-display font-black text-sm text-orange-500">
-                    0{idx + 1}
-                  </div>
+                <Play className="w-6 h-6 fill-current" />
+                <span>START WORKOUT ({routine.totalRounds} ROUNDS • ~{totalDurationMinutes} MINS)</span>
+              </button>
+            </div>
+
+            {/* Form Over Speed Principle Callout */}
+            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs sm:text-sm leading-relaxed flex items-start gap-3">
+              <ShieldAlert className="w-5 h-5 shrink-0 text-amber-500 mt-0.5" />
+              <div>
+                <span className="font-display font-bold uppercase tracking-wider block mb-0.5 text-amber-400">
+                  COACHING PRINCIPLE // FOCUS ON FORM OVER SPEED:
+                </span>
+                <span className="text-xs text-[var(--text-secondary)] leading-normal">
+                  Controlled repetitions under strict muscle tension build functional strength and protect joints far faster than sloppy, rushed repetitions. Aim for clean, explosive concentric movement and disciplined eccentric control.
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* B. WIDESCREEN 2-COLUMN STUDIO DASHBOARD: EXERCISES + INTELLIGENCE */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* LEFT AREA (8 COLS): 6-EXERCISE INTERACTIVE MOVEMENT MATRIX */}
+          <div className="lg:col-span-8 flex flex-col gap-4">
+            <div className="flex items-center justify-between px-1">
+              <div>
+                <h3 className="text-sm font-display font-bold uppercase tracking-widest text-[var(--text-primary)] flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-orange-500" />
+                  <span>CIRCUIT MOVEMENT SEQUENCE</span>
+                </h3>
+                <p className="text-xs text-[var(--text-muted)] font-sans mt-0.5">
+                  Complete each movement for 40 seconds with 20 seconds rest between stations
+                </p>
+              </div>
+
+              <span className="text-xs font-display font-bold text-orange-500 tracking-wider bg-orange-500/10 px-3 py-1 rounded-full border border-orange-500/20">
+                {routine.exercises.length} EXERCISES
+              </span>
+            </div>
+
+            {/* 2-COLUMN GRID OF EXERCISE CARDS */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {routine.exercises.map((ex, idx) => (
+                <div
+                  key={ex.id}
+                  onClick={() => setSelectedExercise(ex)}
+                  className="group relative cursor-pointer p-5 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-orange-500/50 transition-all shadow-sm hover:shadow-xl hover:shadow-orange-500/5 flex flex-col justify-between gap-4"
+                >
+                  {/* Card Top: Number & Category */}
                   <div>
-                    <h4 className="font-display font-bold text-base md:text-lg text-[var(--text-primary)] uppercase tracking-wide">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="w-8 h-8 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] flex items-center justify-center font-display font-black text-sm text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                        0{idx + 1}
+                      </span>
+                      <span className="text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] group-hover:text-orange-500 transition-colors flex items-center gap-1">
+                        <span>TECHNIQUE</span>
+                        <ChevronRight className="w-3 h-3" />
+                      </span>
+                    </div>
+
+                    <h4 className="font-display font-black text-lg text-[var(--text-primary)] uppercase tracking-wide group-hover:text-orange-500 transition-colors">
                       {ex.name}
                     </h4>
-                    <p className="text-xs text-[var(--text-secondary)] line-clamp-1 mb-1 font-sans">
+
+                    <p className="text-xs text-[var(--text-secondary)] line-clamp-2 mt-1 font-sans leading-relaxed">
                       {ex.instructions}
                     </p>
+                  </div>
+
+                  {/* Card Bottom: Muscles & Form Cue */}
+                  <div className="pt-3 border-t border-[var(--border-subtle)] flex flex-col gap-2">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {ex.targetMuscles.map((muscle) => (
                         <span
                           key={muscle}
-                          className="text-[10px] font-display font-semibold px-2 py-0.5 rounded bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)] uppercase"
+                          className="text-[9px] font-display font-bold px-2 py-0.5 rounded bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)] uppercase tracking-wider"
                         >
                           {muscle}
                         </span>
                       ))}
                     </div>
+
+                    {ex.formCues && ex.formCues.length > 0 && (
+                      <p className="text-[11px] text-emerald-500 flex items-center gap-1.5 font-sans font-medium line-clamp-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                        <span>{ex.formCues[0]}</span>
+                      </p>
+                    )}
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
+              ))}
+            </div>
+          </div>
+
+          {/* RIGHT AREA (4 COLS): TRAINING INTELLIGENCE & HISTORY SIDEBAR */}
+          <div className="lg:col-span-4 flex flex-col gap-6">
+            
+            {/* 1. Workout History & Streaks Card */}
+            <div className="p-6 rounded-3xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex flex-col gap-4 shadow-sm">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-display font-bold uppercase tracking-widest text-[var(--text-muted)] flex items-center gap-2">
+                  <History className="w-4 h-4 text-orange-500" />
+                  <span>TRAINING LOGS & STREAK</span>
+                </h3>
+                <span className="text-xs font-display font-bold text-emerald-500">
+                  {totalWorkoutsCount} {totalWorkoutsCount === 1 ? "SESSION" : "SESSIONS"}
+                </span>
               </div>
-            ))}
+
+              {/* Quick Summary Badges */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="p-3 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-center">
+                  <span className="block text-xl font-display font-black text-[var(--text-primary)]">
+                    {totalWorkoutsCount}
+                  </span>
+                  <span className="text-[10px] font-display font-bold uppercase text-[var(--text-muted)] tracking-wider">
+                    COMPLETED
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-center">
+                  <span className="block text-xl font-display font-black text-orange-500">
+                    {totalMinutesTrained}m
+                  </span>
+                  <span className="text-[10px] font-display font-bold uppercase text-[var(--text-muted)] tracking-wider">
+                    TIME LOGGED
+                  </span>
+                </div>
+              </div>
+
+              {/* Sessions List */}
+              {sessions.length > 0 ? (
+                <div className="flex flex-col gap-2 mt-1">
+                  {sessions.slice(0, 4).map((s) => (
+                    <div
+                      key={s.id}
+                      className="flex items-center justify-between p-3 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-xs"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                          <Award className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <span className="font-display font-bold text-xs block text-[var(--text-primary)] uppercase tracking-wide">
+                            {s.routineTitle}
+                          </span>
+                          <span className="text-[10px] text-[var(--text-muted)] font-mono">
+                            {new Date(s.completedAt).toLocaleDateString()} • {formatTime(s.totalSeconds)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="font-display font-bold text-xs text-orange-500 block">
+                          ~{s.estimatedCalories} KCAL
+                        </span>
+                        <span className="text-[9px] text-emerald-500 flex items-center justify-end gap-0.5 font-display font-semibold uppercase">
+                          <CheckCircle2 className="w-2.5 h-2.5" />
+                          SAVED
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-center text-xs text-[var(--text-muted)] flex flex-col items-center gap-2 py-6">
+                  <Flame className="w-8 h-8 text-orange-500/40" />
+                  <p className="font-display font-bold text-[var(--text-secondary)] uppercase tracking-wide">
+                    READY FOR YOUR FIRST SESSION?
+                  </p>
+                  <p className="text-[11px] max-w-xs text-[var(--text-muted)] font-sans">
+                    Tap &quot;Start Workout&quot; above. Your rounds and calories will automatically record here and sync to MongoDB Atlas.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* 2. Tactical Movement Principles */}
+            <div className="p-6 rounded-3xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex flex-col gap-3 shadow-sm">
+              <h3 className="text-xs font-display font-bold uppercase tracking-widest text-[var(--text-muted)] flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-emerald-500" />
+                <span>HOW TO MASTER THIS CIRCUIT</span>
+              </h3>
+
+              <div className="space-y-3 text-xs text-[var(--text-secondary)] font-sans">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-md bg-orange-500/10 text-orange-500 flex items-center justify-center font-display font-bold text-[10px] shrink-0 mt-0.5">
+                    1
+                  </div>
+                  <p>
+                    <strong className="text-[var(--text-primary)] font-display uppercase tracking-wider block">Controlled Eccentric Phase:</strong>
+                    Lower yourself under control for 2 seconds before driving upward. Do not freefall into squats or push-ups.
+                  </p>
+                </div>
+
+                <div className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-md bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-display font-bold text-[10px] shrink-0 mt-0.5">
+                    2
+                  </div>
+                  <p>
+                    <strong className="text-[var(--text-primary)] font-display uppercase tracking-wider block">Consistent Work Rate:</strong>
+                    Don&apos;t sprint the first 15 seconds and burnout. Maintain a rhythmic pace that lets you work through all 40 seconds.
+                  </p>
+                </div>
+
+                <div className="flex items-start gap-2.5">
+                  <div className="w-5 h-5 rounded-md bg-blue-500/10 text-blue-500 flex items-center justify-center font-display font-bold text-[10px] shrink-0 mt-0.5">
+                    3
+                  </div>
+                  <p>
+                    <strong className="text-[var(--text-primary)] font-display uppercase tracking-wider block">Use 1-Tap Regressions:</strong>
+                    If muscles fatigue mid-set, switch to Knee Push-Ups or Step-Back Lunges rather than stopping completely.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Audio & Hardware Status */}
+            <div className="p-5 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] flex items-center justify-between text-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
+                  <Smartphone className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="font-display font-bold uppercase tracking-wider block text-[var(--text-primary)]">
+                    HARDWARE OPTIMIZED
+                  </span>
+                  <span className="text-[11px] text-[var(--text-muted)]">
+                    Screen wake lock & Web Audio engine
+                  </span>
+                </div>
+              </div>
+
+              <span className="text-[10px] font-display font-bold text-emerald-500 uppercase px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+                ACTIVE
+              </span>
+            </div>
+
           </div>
         </div>
       </main>
 
-      {/* Screen Wake Lock Footer Badge */}
-      <footer className="pt-4 pb-2 text-center border-t border-[var(--border-subtle)] mt-4">
-        <p className="text-xs text-[var(--text-muted)] flex items-center justify-center gap-1.5 font-sans">
-          <Smartphone className="w-3.5 h-3.5 text-orange-500" />
-          <span>Screen wake lock active: display remains awake during training</span>
-        </p>
+      {/* 3. FULL-WIDTH EDGE-TO-EDGE FOOTER */}
+      <footer className="w-full border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]/50 mt-12 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)] font-sans">
+          <div className="flex items-center gap-2">
+            <span className="font-display font-black text-sm uppercase text-[var(--text-primary)]">KINEMATIQ</span>
+            <span>— Precision High-Intensity Interval Protocol</span>
+          </div>
+
+          <div className="flex items-center gap-4 text-[11px]">
+            <span className="flex items-center gap-1.5 text-emerald-500">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Offline Resilience Enabled</span>
+            </span>
+            <span>•</span>
+            <span className="flex items-center gap-1.5">
+              <Smartphone className="w-3.5 h-3.5 text-orange-500" />
+              <span>Wake Lock Guarded</span>
+            </span>
+          </div>
+        </div>
       </footer>
+
+      {/* MODALS */}
+
+      {/* Exercise Technique Detail Modal */}
+      {selectedExercise && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-3xl max-w-lg w-full p-6 flex flex-col gap-4 shadow-2xl animate-fade-in">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-display font-bold uppercase tracking-widest text-orange-500">
+                  EXERCISE MASTERCLASS
+                </span>
+                <h3 className="text-2xl font-display font-black text-[var(--text-primary)] uppercase">
+                  {selectedExercise.name}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedExercise(null)}
+                className="w-9 h-9 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-muted)] hover:text-white"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+              {selectedExercise.instructions}
+            </p>
+
+            <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs">
+              <strong className="block font-display uppercase tracking-wider mb-1">
+                Form Checkpoints:
+              </strong>
+              <ul className="list-disc list-inside space-y-1 text-slate-300">
+                {selectedExercise.formCues?.map((cue, i) => (
+                  <li key={i}>{cue}</li>
+                ))}
+              </ul>
+            </div>
+
+            {selectedExercise.watchOutWarning && (
+              <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-start gap-2">
+                <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-red-400" />
+                <span>
+                  <strong className="uppercase font-display tracking-wider block">Watch Out:</strong>
+                  {selectedExercise.watchOutWarning}
+                </span>
+              </div>
+            )}
+
+            <button
+              onClick={() => setSelectedExercise(null)}
+              className="w-full py-3 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] font-display font-bold text-xs uppercase tracking-wider text-[var(--text-primary)] hover:border-orange-500/40"
+            >
+              CLOSE MASTERCLASS
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Live Fullscreen Workout Timer Modal */}
       {isWorkingOut && (
