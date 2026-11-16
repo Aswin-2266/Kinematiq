@@ -12,7 +12,7 @@
 | Phase | Milestone | Scope / Deliverables | Status |
 | :--- | :--- | :--- | :--- |
 | **Phase 1** | **Project Scaffolding & Design Foundation** | Next.js 14 App Router, TypeScript, Tailwind CSS, Kinetic Pulse theme variables, PWA Manifest, mobile viewport meta tags | `[x] Completed` |
-| **Phase 2** | **MongoDB Layer & Data Models** | Mongoose connection pool, User, Exercise, Routine, WorkoutSession schemas, offline sync engine, seed data for 6 screenshot exercises | `[ ] Pending` |
+| **Phase 2** | **MongoDB Layer & Data Models** | Mongoose connection pool, User, Exercise, Routine, WorkoutSession schemas, offline sync engine, seed data for 6 screenshot exercises | `[x] Completed` |
 | **Phase 3** | **Mobile APIs (Audio Engine & Wake Lock)** | Web Audio API gym beeps (zero external assets), Web Speech API voice coach, Screen Wake Lock API (keeps phone screen on) | `[ ] Pending` |
 | **Phase 4** | **Visual Form Motion Engine** | High-contrast animated visual guides for all 6 exercises (Squats, Push-Ups, Reverse Lunges, Glute Bridges, Plank, Burpees/Mountain Climbers) + Form Cues | `[ ] Pending` |
 | **Phase 5** | **Workout Interval Timer & State Machine** | 40s Work / 20s Rest / 60s Round Break cycle, 3 full rounds, "Up Next" preview during 20s rest, large mobile touch targets | `[ ] Pending` |
@@ -30,13 +30,14 @@
 - [x] Build responsive shell with mobile-safe area insets (`env(safe-area-inset-top)`) and Light/Dark toggle
 
 ### Phase 2: MongoDB Layer & Data Models
-- [ ] Implement cached Mongoose connection (`src/lib/mongodb.ts`) for serverless cloud Atlas
-- [ ] Implement Mongoose Schemas:
+- [x] Implement cached Mongoose connection (`src/lib/mongodb.ts`) for serverless cloud Atlas
+- [x] Implement Mongoose Schemas:
   - `User`: Email, password hash, user preferences (audio, voice coach, theme)
   - `Exercise`: Name, muscles, instructions, form cues, SVG visual key, alternative
   - `Routine`: 15-20 Min Full-Body Circuit preset (40s work, 20s rest, 3 rounds, 60s break)
   - `WorkoutSession`: Saved history logs, duration, calories, rounds
-- [ ] Create offline storage fallback (`src/lib/offlineQueue.ts`) so workouts save locally if offline
+- [x] Create offline storage fallback (`src/lib/offlineQueue.ts`) so workouts save locally if offline
+- [x] Health check and workout session API routes (`/api/health`, `/api/workouts`)
 
 ### Phase 3: Hardware & Mobile APIs
 - [ ] Build Web Audio API synthesizer (`src/lib/audioEngine.ts`):
