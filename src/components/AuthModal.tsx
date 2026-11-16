@@ -58,15 +58,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="w-full max-w-sm rounded-3xl bg-[#0F1624] border border-[#1E2B42] p-6 shadow-2xl relative flex flex-col gap-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="w-full max-w-sm rounded-3xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-primary)] p-6 shadow-2xl relative flex flex-col gap-4 animate-fade-in max-h-[90vh] overflow-y-auto">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-white"
+          className="absolute top-4 right-4 w-8 h-8 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
           aria-label="Close"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
         {currentUser ? (
@@ -77,20 +77,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
 
             <div>
-              <h3 className="text-xl font-display font-bold uppercase tracking-wide text-white">
+              <h3 className="text-xl font-display font-bold uppercase tracking-wide text-[var(--text-primary)]">
                 {currentUser.name}
               </h3>
-              <p className="text-xs text-slate-400">{currentUser.email}</p>
+              <p className="text-xs text-[var(--text-muted)]">{currentUser.email}</p>
             </div>
 
-            <div className="w-full p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center justify-center gap-2 font-display font-bold uppercase tracking-wider">
+            <div className="w-full p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs flex items-center justify-center gap-2 font-display font-bold uppercase tracking-wider">
               <CheckCircle className="w-4 h-4" />
               <span>CLOUD MONGODB SYNC ACTIVE</span>
             </div>
 
             <button
               onClick={onLogout}
-              className="w-full py-3 rounded-xl bg-[#162033] border border-[#1E2B42] text-red-400 font-display font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-2 hover:bg-red-500/10 transition-colors mt-2"
+              className="w-full py-3 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-red-500 font-display font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-2 hover:bg-red-500/10 transition-colors mt-2"
             >
               <LogOut className="w-4 h-4" />
               <span>SIGN OUT</span>
@@ -100,21 +100,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           /* LOGIN & REGISTER FORMS */
           <>
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
+              <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-display font-bold uppercase tracking-wide text-white">
+                <h3 className="text-lg font-display font-bold uppercase tracking-wide text-[var(--text-primary)]">
                   {tab === "login" ? "SIGN IN // ATHLETE" : "CREATE ATHLETE PROFILE"}
                 </h3>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-[var(--text-muted)]">
                   Sync all workouts directly to MongoDB Atlas
                 </p>
               </div>
             </div>
 
             {/* Tab Switcher */}
-            <div className="flex rounded-xl bg-[#162033] p-1 border border-[#1E2B42]">
+            <div className="flex rounded-xl bg-[var(--bg-surface-elevated)] p-1 border border-[var(--border-subtle)]">
               <button
                 type="button"
                 onClick={() => {
@@ -123,8 +123,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 }}
                 className={`flex-1 py-1.5 rounded-lg text-xs font-display font-bold uppercase tracking-wider transition-all ${
                   tab === "login"
-                    ? "bg-[#0F1624] text-white shadow-sm"
-                    : "text-slate-400"
+                    ? "bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-sm border border-[var(--border-subtle)]"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
                 }`}
               >
                 SIGN IN
@@ -137,8 +137,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 }}
                 className={`flex-1 py-1.5 rounded-lg text-xs font-display font-bold uppercase tracking-wider transition-all ${
                   tab === "register"
-                    ? "bg-[#0F1624] text-white shadow-sm"
-                    : "text-slate-400"
+                    ? "bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-sm border border-[var(--border-subtle)]"
+                    : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
                 }`}
               >
                 REGISTER
@@ -146,7 +146,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
 
             {error && (
-              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{error}</span>
               </div>
@@ -155,7 +155,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               {tab === "register" && (
                 <div>
-                  <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-slate-400 mb-1">
+                  <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1">
                     ATHLETE NAME
                   </label>
                   <input
@@ -164,13 +164,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Alex Hunter"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#162033] border border-[#1E2B42] text-sm text-white focus:outline-none focus:border-orange-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-orange-500"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-slate-400 mb-1">
+                <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1">
                   EMAIL ADDRESS
                 </label>
                 <input
@@ -179,12 +179,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="athlete@example.com"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#162033] border border-[#1E2B42] text-sm text-white focus:outline-none focus:border-orange-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-orange-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-slate-400 mb-1">
+                <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1">
                   PASSWORD
                 </label>
                 <input
@@ -194,14 +194,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#162033] border border-[#1E2B42] text-sm text-white focus:outline-none focus:border-orange-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-orange-500"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3.5 mt-1 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-display font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-2 shadow-xl shadow-orange-500/25 active:scale-[0.98] transition-transform disabled:opacity-50"
+                className="w-full py-3.5 mt-1 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-display font-black uppercase tracking-wider text-sm flex items-center justify-center gap-2 shadow-xl shadow-orange-500/25 active:scale-[0.98] transition-transform disabled:opacity-50 hover:brightness-105"
               >
                 {isLoading ? (
                   <span>AUTHENTICATING...</span>

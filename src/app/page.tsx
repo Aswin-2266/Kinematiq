@@ -598,7 +598,7 @@ export default function Home() {
               </div>
               <button
                 onClick={() => setSelectedExercise(null)}
-                className="w-9 h-9 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-muted)] hover:text-white"
+                className="w-9 h-9 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
               >
                 ✕
               </button>
@@ -612,7 +612,7 @@ export default function Home() {
               <strong className="block font-display uppercase tracking-wider mb-1">
                 Form Checkpoints:
               </strong>
-              <ul className="list-disc list-inside space-y-1 text-slate-300">
+              <ul className="list-disc list-inside space-y-1 text-[var(--text-secondary)]">
                 {selectedExercise.formCues?.map((cue, i) => (
                   <li key={i}>{cue}</li>
                 ))}
