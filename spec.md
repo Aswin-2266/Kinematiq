@@ -14,7 +14,7 @@
 | **Phase 1** | **Project Scaffolding & Design Foundation** | Next.js 14 App Router, TypeScript, Tailwind CSS, Kinetic Pulse theme variables, PWA Manifest, mobile viewport meta tags | `[x] Completed` |
 | **Phase 2** | **MongoDB Layer & Data Models** | Mongoose connection pool, User, Exercise, Routine, WorkoutSession schemas, offline sync engine, seed data for 6 screenshot exercises | `[x] Completed` |
 | **Phase 3** | **Mobile APIs (Audio Engine & Wake Lock)** | Web Audio API gym beeps (zero external assets), Web Speech API voice coach, Screen Wake Lock API (keeps phone screen on) | `[x] Completed` |
-| **Phase 4** | **Visual Form Motion Engine** | High-contrast animated visual guides for all 6 exercises (Squats, Push-Ups, Reverse Lunges, Glute Bridges, Plank, Burpees/Mountain Climbers) + Form Cues | `[ ] Pending` |
+| **Phase 4** | **Visual Form Motion Engine** | High-contrast animated visual guides for all 6 exercises (Squats, Push-Ups, Reverse Lunges, Glute Bridges, Plank, Burpees/Mountain Climbers) + Form Cues | `[x] Completed` |
 | **Phase 5** | **Workout Interval Timer & State Machine** | 40s Work / 20s Rest / 60s Round Break cycle, 3 full rounds, "Up Next" preview during 20s rest, large mobile touch targets | `[ ] Pending` |
 | **Phase 6** | **Authentication, History & Custom Builder** | Multi-user JWT auth, Workout completion summary, MongoDB session history & streaks, Custom routine editor | `[ ] Pending` |
 | **Phase 7** | **Verification, Mobile Polish & AGENTS.md** | Automated TypeScript build verification, mobile touch ergonomics test, documentation in AGENTS.md, final walkthrough | `[ ] Pending` |
@@ -52,18 +52,18 @@
 - [x] Build Screen Wake Lock manager (`src/lib/wakeLock.ts`) with auto-reacquire on visibility change
 
 ### Phase 4: Visual Form Motion Engine & Form Coach
-- [ ] Build animated SVG motion components for the 6 screenshot exercises:
+- [x] Build animated SVG motion components for the 6 screenshot exercises:
   1. **Bodyweight Squats**: Hip hinge, knees tracking over toes, thighs parallel to floor
   2. **Push-Ups**: Rigid head-to-heel line, chest to floor + knee regression toggle
   3. **Reverse Lunges**: Stepping backward, alternating legs, upright posture
   4. **Glute Bridges**: Hip thrust from floor, glute squeeze at top
   5. **Forearm Plank**: Forearm hold, flat back, engaged core
   6. **Burpees vs Mountain Climbers**: Dynamic switchable animation with high-energy pacing
-- [ ] Add Muscle Target Pill Badges (Quads, Glutes, Core, Chest, Shoulders, Triceps, etc.)
-- [ ] Add **Live Form Coaching Cues & Injury Prevention Badges** during active 40s work intervals:
+- [x] Add Muscle Target Pill Badges (Quads, Glutes, Core, Chest, Shoulders, Triceps, etc.)
+- [x] Add **Live Form Coaching Cues & Injury Prevention Badges** during active 40s work intervals:
   - High-visibility Do's & Common Mistakes Callout (e.g., "✅ Chest tall", "⚠️ Don't let lower back sag")
   - Expandable **"Form Masterclass" Modal/Card** for each exercise with step-by-step technique, regressions, and the pro-tip: *"Focus on Form over Speed: Controlled tension builds muscle faster than sloppy rushed reps"*
-- [ ] Add One-Tap Easier Modification (Regression) toggle (e.g., switch to Knee Push-Ups or Step-back Lunges mid-workout if fatigued)
+- [x] Add One-Tap Easier Modification (Regression) toggle (e.g., switch to Knee Push-Ups or Step-back Lunges mid-workout if fatigued)
 
 ### Phase 5: Interval Workout Timer & State Machine
 - [ ] Develop deterministic interval timer engine (timestamp delta-based to prevent mobile drift)
