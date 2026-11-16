@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Exercise } from "@/types";
-import { CheckCircle2, AlertTriangle, ArrowRightLeft, ShieldAlert, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle2, AlertTriangle, ArrowRightLeft, ShieldAlert, Zap, ChevronDown, ChevronUp } from "lucide-react";
 
 interface FormCoachCardProps {
   exercise: Exercise;
@@ -48,40 +48,40 @@ export const FormCoachCard: React.FC<FormCoachCardProps> = ({
     : exercise.watchOutWarning;
 
   return (
-    <div className="w-full flex flex-col gap-2.5 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-4 shadow-sm transition-all">
+    <div className="w-full flex flex-col gap-2.5 rounded-2xl bg-[#0F1624] border border-[#1E2B42] p-4 shadow-md transition-all">
       {/* Header with Title and Switches */}
       <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-orange-500">
-              Form Coach
+            <span className="text-[10px] font-display font-bold uppercase tracking-widest text-orange-500">
+              FORM CUE & TARGET
             </span>
             {isRegression && (
-              <span className="text-[10px] font-semibold bg-amber-500/10 border border-amber-500/20 text-amber-500 px-2 py-0.5 rounded-full">
-                Regression Active
+              <span className="text-[9px] font-display font-bold bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2 py-0.5 rounded uppercase">
+                REGRESSION
               </span>
             )}
           </div>
-          <h3 className="text-base font-extrabold text-[var(--text-primary)]">
+          <h3 className="text-lg font-display font-bold text-white tracking-wide uppercase">
             {activeName}
           </h3>
         </div>
 
-        {/* Quick Toggles: Alternative (e.g. Mountain Climbers) or Regression (e.g. Knee Pushups) */}
+        {/* Quick Toggles: Alternative or Regression */}
         <div className="flex items-center gap-1">
           {exercise.alternative && (
             <button
               onClick={onToggleAlternative}
-              className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-2.5 py-1.5 rounded-lg border text-xs font-display font-bold tracking-wider flex items-center gap-1.5 transition-all ${
                 isAlternative
-                  ? "bg-orange-500/15 border-orange-500 text-orange-500"
-                  : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-orange-500/40"
+                  ? "bg-orange-500/20 border-orange-500 text-orange-400"
+                  : "bg-[#162033] border-[#1E2B42] text-slate-300 hover:border-orange-500/40"
               }`}
               title="Switch between Burpees and Mountain Climbers"
             >
-              <ArrowRightLeft className="w-3.5 h-3.5" />
-              <span className="text-[11px]">
-                {isAlternative ? "Burpees" : exercise.alternative.name.split(" ")[0]}
+              <ArrowRightLeft className="w-3 h-3" />
+              <span>
+                {isAlternative ? "BURPEES" : exercise.alternative.name.split(" ")[0].toUpperCase()}
               </span>
             </button>
           )}
@@ -89,21 +89,21 @@ export const FormCoachCard: React.FC<FormCoachCardProps> = ({
           {exercise.regression && (
             <button
               onClick={onToggleRegression}
-              className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition-all ${
+              className={`px-2.5 py-1.5 rounded-lg border text-xs font-display font-bold tracking-wider flex items-center gap-1.5 transition-all ${
                 isRegression
-                  ? "bg-amber-500/15 border-amber-500 text-amber-500"
-                  : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:border-amber-500/40"
+                  ? "bg-amber-500/20 border-amber-500 text-amber-400"
+                  : "bg-[#162033] border-[#1E2B42] text-slate-300 hover:border-amber-500/40"
               }`}
-              title="Toggle easier variation if fatigued"
+              title="Toggle easier variation"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span className="text-[11px]">{isRegression ? "Standard" : "Easier"}</span>
+              <Zap className="w-3 h-3" />
+              <span>{isRegression ? "STANDARD" : "EASIER"}</span>
             </button>
           )}
 
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+            className="p-1.5 text-slate-400 hover:text-white"
             aria-label="Toggle details"
           >
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -116,7 +116,7 @@ export const FormCoachCard: React.FC<FormCoachCardProps> = ({
         {activeMuscles.map((muscle) => (
           <span
             key={muscle}
-            className="text-[11px] font-medium px-2.5 py-0.5 rounded-lg bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)]"
+            className="text-[10px] font-display font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-[#162033] text-slate-300 border border-[#1E2B42]"
           >
             {muscle}
           </span>
@@ -124,46 +124,48 @@ export const FormCoachCard: React.FC<FormCoachCardProps> = ({
       </div>
 
       {/* Primary Instruction Line */}
-      <p className="text-xs text-[var(--text-secondary)] leading-relaxed italic">
-        &ldquo;{activeInstructions}&rdquo;
+      <p className="text-xs text-slate-300 leading-relaxed font-sans">
+        {activeInstructions}
       </p>
 
       {/* Expandable Deep Coaching Section */}
       {isExpanded && (
-        <div className="flex flex-col gap-2.5 pt-2 border-t border-[var(--border-subtle)] animate-fade-in">
+        <div className="flex flex-col gap-2.5 pt-2 border-t border-[#1E2B42] animate-fade-in">
           {/* Key Form Checkpoints */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
-              Critical Checkpoints
+            <span className="text-[10px] font-display font-bold uppercase tracking-widest text-slate-400">
+              TECHNIQUE CHECKPOINTS
             </span>
             <div className="grid grid-cols-1 gap-1">
               {activeCues.map((cue, idx) => (
-                <div key={idx} className="flex items-start gap-2 text-xs text-[var(--text-primary)]">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                <div key={idx} className="flex items-start gap-2 text-xs text-slate-200">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
                   <span>{cue}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Injury Prevention / Common Mistakes Callout */}
+          {/* Injury Prevention Warning */}
           {activeWarning && (
-            <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-start gap-2">
+            <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
               <div>
-                <span className="font-bold block text-[11px] uppercase tracking-wide">
-                  Avoid Injury:
+                <span className="font-display font-bold block text-[11px] uppercase tracking-wider">
+                  AVOID INJURY:
                 </span>
                 <span>{activeWarning}</span>
               </div>
             </div>
           )}
 
-          {/* Pro-Tip Box from Screenshot */}
-          <div className="p-2.5 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-xs flex items-start gap-2">
+          {/* Pro-Tip Box */}
+          <div className="p-2.5 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs flex items-start gap-2">
             <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold block text-[11px]">Pro-Tip:</span>
+              <span className="font-display font-bold block text-[11px] uppercase tracking-wider">
+                PRO-TIP:
+              </span>
               <span>
                 Focus on form over speed. Controlled repetitions build muscle faster than sloppy, rushed reps.
               </span>

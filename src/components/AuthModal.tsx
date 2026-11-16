@@ -45,7 +45,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         throw new Error(data.error || "Authentication failed");
       }
 
-      // Persist auth token locally
       localStorage.setItem("kinematiq_token", data.token);
       localStorage.setItem("kinematiq_user", JSON.stringify(data.user));
 
@@ -59,12 +58,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-sm rounded-3xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] p-6 shadow-2xl relative flex flex-col gap-4 animate-fade-in">
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="w-full max-w-sm rounded-3xl bg-[#0F1624] border border-[#1E2B42] p-6 shadow-2xl relative flex flex-col gap-4 animate-fade-in">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-xl text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+          className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-white"
           aria-label="Close"
         >
           <X className="w-5 h-5" />
@@ -73,62 +72,62 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {currentUser ? (
           /* USER LOGGED IN VIEW */
           <div className="flex flex-col items-center text-center gap-3 py-2">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center text-2xl font-black shadow-lg">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center text-2xl font-display font-black shadow-lg">
               {currentUser.name.charAt(0).toUpperCase()}
             </div>
 
             <div>
-              <h3 className="text-lg font-bold text-[var(--text-primary)]">
+              <h3 className="text-xl font-display font-bold uppercase tracking-wide text-white">
                 {currentUser.name}
               </h3>
-              <p className="text-xs text-[var(--text-muted)]">{currentUser.email}</p>
+              <p className="text-xs text-slate-400">{currentUser.email}</p>
             </div>
 
-            <div className="w-full p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs flex items-center justify-center gap-2 font-semibold">
+            <div className="w-full p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center justify-center gap-2 font-display font-bold uppercase tracking-wider">
               <CheckCircle className="w-4 h-4" />
-              <span>Cloud MongoDB Sync Active</span>
+              <span>CLOUD MONGODB SYNC ACTIVE</span>
             </div>
 
             <button
               onClick={onLogout}
-              className="w-full py-3 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-red-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-500/10 transition-colors mt-2"
+              className="w-full py-3 rounded-xl bg-[#162033] border border-[#1E2B42] text-red-400 font-display font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-2 hover:bg-red-500/10 transition-colors mt-2"
             >
               <LogOut className="w-4 h-4" />
-              <span>Sign Out</span>
+              <span>SIGN OUT</span>
             </button>
           </div>
         ) : (
           /* LOGIN & REGISTER FORMS */
           <>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
-                <Shield className="w-4 h-4" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
+                <Shield className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-extrabold text-[var(--text-primary)]">
-                  {tab === "login" ? "Sign In to Kinematiq" : "Create Account"}
+                <h3 className="text-lg font-display font-bold uppercase tracking-wide text-white">
+                  {tab === "login" ? "SIGN IN // ATHLETE" : "CREATE ATHLETE PROFILE"}
                 </h3>
-                <p className="text-xs text-[var(--text-muted)]">
-                  Save all your workouts safely in MongoDB Atlas
+                <p className="text-[11px] text-slate-400">
+                  Sync all workouts directly to MongoDB Atlas
                 </p>
               </div>
             </div>
 
             {/* Tab Switcher */}
-            <div className="flex rounded-xl bg-[var(--bg-surface-elevated)] p-1 border border-[var(--border-subtle)]">
+            <div className="flex rounded-xl bg-[#162033] p-1 border border-[#1E2B42]">
               <button
                 type="button"
                 onClick={() => {
                   setTab("login");
                   setError(null);
                 }}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 py-1.5 rounded-lg text-xs font-display font-bold uppercase tracking-wider transition-all ${
                   tab === "login"
-                    ? "bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-sm"
-                    : "text-[var(--text-muted)]"
+                    ? "bg-[#0F1624] text-white shadow-sm"
+                    : "text-slate-400"
                 }`}
               >
-                Sign In
+                SIGN IN
               </button>
               <button
                 type="button"
@@ -136,19 +135,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   setTab("register");
                   setError(null);
                 }}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                className={`flex-1 py-1.5 rounded-lg text-xs font-display font-bold uppercase tracking-wider transition-all ${
                   tab === "register"
-                    ? "bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-sm"
-                    : "text-[var(--text-muted)]"
+                    ? "bg-[#0F1624] text-white shadow-sm"
+                    : "text-slate-400"
                 }`}
               >
-                Sign Up
+                REGISTER
               </button>
             </div>
 
-            {/* Error Message */}
             {error && (
-              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{error}</span>
               </div>
@@ -157,8 +155,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               {tab === "register" && (
                 <div>
-                  <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] mb-1">
-                    Your Name
+                  <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-slate-400 mb-1">
+                    ATHLETE NAME
                   </label>
                   <input
                     type="text"
@@ -166,14 +164,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Alex Hunter"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-orange-500"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#162033] border border-[#1E2B42] text-sm text-white focus:outline-none focus:border-orange-500"
                   />
                 </div>
               )}
 
               <div>
-                <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] mb-1">
-                  Email Address
+                <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-slate-400 mb-1">
+                  EMAIL ADDRESS
                 </label>
                 <input
                   type="email"
@@ -181,13 +179,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="athlete@example.com"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-orange-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#162033] border border-[#1E2B42] text-sm text-white focus:outline-none focus:border-orange-500"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-bold uppercase text-[var(--text-muted)] mb-1">
-                  Password
+                <label className="block text-[10px] font-display font-bold uppercase tracking-wider text-slate-400 mb-1">
+                  PASSWORD
                 </label>
                 <input
                   type="password"
@@ -196,26 +194,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-sm text-[var(--text-primary)] focus:outline-none focus:border-orange-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#162033] border border-[#1E2B42] text-sm text-white focus:outline-none focus:border-orange-500"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 mt-1 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-transform disabled:opacity-50"
+                className="w-full py-3.5 mt-1 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-display font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-2 shadow-xl shadow-orange-500/25 active:scale-[0.98] transition-transform disabled:opacity-50"
               >
                 {isLoading ? (
-                  <span>Processing...</span>
+                  <span>AUTHENTICATING...</span>
                 ) : tab === "login" ? (
                   <>
                     <LogIn className="w-4 h-4" />
-                    <span>Sign In</span>
+                    <span>SIGN IN</span>
                   </>
                 ) : (
                   <>
                     <UserPlus className="w-4 h-4" />
-                    <span>Create Free Account</span>
+                    <span>CREATE ACCOUNT</span>
                   </>
                 )}
               </button>

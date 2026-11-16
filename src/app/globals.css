@@ -18,18 +18,24 @@
 }
 
 .dark {
-  --bg-primary: #0B0F19; /* Deep Obsidian */
-  --bg-surface: #141E33; /* Obsidian Slate */
-  --bg-surface-elevated: #1E293B;
+  --bg-primary: #080B11; /* Deep Carbon Obsidian */
+  --bg-surface: #0F1624; /* Tactical Carbon Card */
+  --bg-surface-elevated: #162033; /* Elevated Surface */
   --text-primary: #F8FAFC;
   --text-secondary: #94A3B8;
   --text-muted: #64748B;
-  --border-subtle: #24324D;
-  --accent-work: #FF7A00; /* Sunset Orange */
-  --accent-work-glow: rgba(255, 122, 0, 0.25);
-  --accent-rest: #10B981; /* Neon Emerald */
+  --border-subtle: #1E2B42;
+  --accent-work: #FF6A00; /* Sunset Orange */
+  --accent-work-glow: rgba(255, 106, 0, 0.25);
+  --accent-rest: #10B981; /* Vitality Emerald */
   --accent-rest-glow: rgba(16, 185, 129, 0.25);
   --accent-break: #38BDF8;
+}
+
+/* FIX: Prevent horizontal UI jumping when scrollbar appears/disappears */
+html {
+  scrollbar-gutter: stable;
+  overflow-y: scroll;
 }
 
 body {
@@ -45,9 +51,23 @@ body {
   overflow-x: hidden;
 }
 
-/* Prevent unwanted pull-to-refresh on mobile while retaining normal scroll */
-html, body {
-  overscroll-behavior-y: contain;
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-subtle);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 /* Mobile minimum touch target standards */
@@ -58,6 +78,6 @@ button, a, input, select {
 /* Smooth transitions for theme switches */
 * {
   transition-property: background-color, border-color, color, fill, stroke;
-  transition-duration: 150ms;
+  transition-duration: 120ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }

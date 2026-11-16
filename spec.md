@@ -18,6 +18,7 @@
 | **Phase 5** | **Workout Interval Timer & State Machine** | 40s Work / 20s Rest / 60s Round Break cycle, 3 full rounds, "Up Next" preview during 20s rest, large mobile touch targets | `[x] Completed` |
 | **Phase 6** | **Authentication, History & Custom Builder** | Multi-user JWT auth, Workout completion summary, MongoDB session history & streaks, Custom routine editor | `[x] Completed` |
 | **Phase 7** | **Verification, Mobile Polish & AGENTS.md** | Automated TypeScript build verification, mobile touch ergonomics test, documentation in AGENTS.md, final walkthrough | `[x] Completed` |
+| **Phase 8** | **Tactical UI/UX Overhaul & Scrollbar Fix** | Eliminate horizontal scrollbar jumping (`scrollbar-gutter: stable`), Oswald & Inter typography, athletic silhouettes replacing stick figures, Hero Start CTA | `[x] Completed` |
 
 ---
 

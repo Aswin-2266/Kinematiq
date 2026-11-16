@@ -13,12 +13,13 @@ import {
   Smartphone, 
   Play, 
   ChevronRight, 
-  Sparkles, 
   Award, 
   History, 
   Sliders, 
   User as UserIcon, 
-  CheckCircle2
+  CheckCircle2,
+  Zap,
+  Target
 } from "lucide-react";
 import { DEFAULT_ROUTINE } from "@/data/defaultRoutine";
 import { WorkoutTimer } from "@/components/WorkoutTimer";
@@ -42,7 +43,6 @@ export default function Home() {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
 
   useEffect(() => {
-    // Sync theme class to document
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
@@ -51,7 +51,6 @@ export default function Home() {
   }, [theme]);
 
   useEffect(() => {
-    // Check saved auth state
     const savedUser = localStorage.getItem("kinematiq_user");
     if (savedUser) {
       try {
@@ -61,7 +60,6 @@ export default function Home() {
       }
     }
 
-    // Load local history & attempt background cloud sync
     const local = getLocalSessions();
     setSessions(local);
     syncPendingSessions().then((res) => {
@@ -78,13 +76,11 @@ export default function Home() {
   const handleWorkoutComplete = (session: WorkoutSession) => {
     setSessions((prev) => [session, ...prev]);
     setIsWorkingOut(false);
-    // Background cloud sync attempt
     syncPendingSessions();
   };
 
   const handleAuthSuccess = (user: User) => {
     setCurrentUser(user);
-    // Re-trigger sync with authenticated user
     syncPendingSessions().then(() => {
       setSessions(getLocalSessions());
     });
@@ -98,19 +94,19 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col justify-between p-4 md:p-8 max-w-md mx-auto transition-colors duration-200">
-      {/* Top Mobile Bar */}
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col justify-between p-4 md:p-8 max-w-md mx-auto transition-colors duration-150 [scrollbar-gutter:stable]">
+      {/* Tactical Top Bar */}
       <header className="flex items-center justify-between py-3 border-b border-[var(--border-subtle)]">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
+        <div className="flex items-center gap-2.5">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/25">
             <Flame className="w-5 h-5 fill-current" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">
-              Kinematiq
+            <h1 className="text-2xl font-display font-black tracking-wider uppercase text-[var(--text-primary)] leading-none">
+              KINEMATIQ
             </h1>
-            <p className="text-[11px] font-medium text-orange-500 tracking-wider uppercase">
-              Circuit Trainer
+            <p className="text-[10px] font-display font-bold text-orange-500 tracking-widest uppercase mt-0.5">
+              INTERVAL PROTOCOL
             </p>
           </div>
         </div>
@@ -122,8 +118,8 @@ export default function Home() {
             onClick={() => setSoundEnabled(!soundEnabled)}
             className={`p-2.5 rounded-xl border transition-all ${
               soundEnabled
-                ? "bg-emerald-500/10 border-emerald-500 text-emerald-500"
-                : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)]"
+                ? "bg-emerald-500/15 border-emerald-500 text-emerald-500"
+                : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-orange-500/30"
             }`}
             title={soundEnabled ? "Audio Sound: ON" : "Audio Sound: OFF (Tap to enable)"}
             aria-label="Toggle Sound"
@@ -136,8 +132,8 @@ export default function Home() {
             onClick={() => setVoiceEnabled(!voiceEnabled)}
             className={`p-2.5 rounded-xl border transition-all ${
               voiceEnabled
-                ? "bg-orange-500/10 border-orange-500 text-orange-500"
-                : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)]"
+                ? "bg-orange-500/15 border-orange-500 text-orange-500"
+                : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-orange-500/30"
             }`}
             title={voiceEnabled ? "Voice Coach: ON" : "Voice Coach: OFF (Tap to enable)"}
             aria-label="Toggle Voice Coach"
@@ -160,10 +156,10 @@ export default function Home() {
             onClick={() => setIsAuthOpen(true)}
             className={`p-2.5 rounded-xl border transition-all ${
               currentUser
-                ? "bg-gradient-to-tr from-orange-500 to-amber-500 text-white font-bold text-xs"
+                ? "bg-gradient-to-tr from-orange-500 to-amber-500 text-white font-display font-bold text-xs"
                 : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-primary)] hover:border-orange-500/40"
             }`}
-            title={currentUser ? `Signed in as ${currentUser.name}` : "Sign In to sync to MongoDB"}
+            title={currentUser ? `Signed in as ${currentUser.name}` : "Sign In to sync with MongoDB"}
             aria-label="Account Settings"
           >
             {currentUser ? (
@@ -179,60 +175,79 @@ export default function Home() {
 
       {/* Main Content Area */}
       <main className="flex-1 py-5 flex flex-col gap-5">
-        {/* Hero Circuit Card */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[var(--bg-surface)] to-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] p-6 shadow-xl">
+        {/* Hero Circuit Card with Direct START Button */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[var(--bg-surface)] to-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] p-6 shadow-2xl">
+          {/* Tactical Badge & Customize Link */}
           <div className="flex items-center justify-between mb-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Full-Body Circuit</span>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-orange-500/10 border border-orange-500/30 text-orange-500 text-[11px] font-display font-bold uppercase tracking-widest">
+              <Target className="w-3.5 h-3.5" />
+              <span>PROTOCOL // FULL-BODY</span>
             </div>
 
-            {/* Customize Intervals Button */}
             <button
               onClick={() => setIsEditorOpen(true)}
-              className="inline-flex items-center gap-1 text-xs font-bold text-orange-500 hover:text-orange-400 transition-colors"
+              className="inline-flex items-center gap-1 text-xs font-display font-bold uppercase tracking-wider text-orange-500 hover:text-orange-400 transition-colors"
             >
               <Sliders className="w-3.5 h-3.5" />
-              <span>Customize</span>
+              <span>CUSTOMIZE</span>
             </button>
           </div>
 
-          <h2 className="text-2xl font-black tracking-tight text-[var(--text-primary)] mb-2">
+          <h2 className="text-3xl font-display font-black tracking-wide text-[var(--text-primary)] mb-1 uppercase">
             {routine.title}
           </h2>
 
-          <p className="text-sm text-[var(--text-secondary)] mb-4 leading-relaxed">
+          <p className="text-xs text-[var(--text-secondary)] mb-4 leading-relaxed font-sans">
             {routine.description}
           </p>
 
           {/* Quick Metrics Grid */}
           <div className="grid grid-cols-3 gap-2.5 my-3">
             <div className="p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
-              <span className="block text-xl font-extrabold text-orange-500 font-mono">
-                {routine.workDurationSeconds}s
+              <span className="block text-2xl font-display font-black text-orange-500">
+                {routine.workDurationSeconds}S
               </span>
-              <span className="text-[11px] font-medium text-[var(--text-muted)] uppercase">Work</span>
+              <span className="text-[10px] font-display font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                WORK
+              </span>
             </div>
             <div className="p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
-              <span className="block text-xl font-extrabold text-emerald-500 font-mono">
-                {routine.restDurationSeconds}s
+              <span className="block text-2xl font-display font-black text-emerald-500">
+                {routine.restDurationSeconds}S
               </span>
-              <span className="text-[11px] font-medium text-[var(--text-muted)] uppercase">Rest</span>
+              <span className="text-[10px] font-display font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                REST
+              </span>
             </div>
             <div className="p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
-              <span className="block text-xl font-extrabold text-blue-500 font-mono">
+              <span className="block text-2xl font-display font-black text-blue-500">
                 {routine.totalRounds}
               </span>
-              <span className="text-[11px] font-medium text-[var(--text-muted)] uppercase">Rounds</span>
+              <span className="text-[10px] font-display font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                ROUNDS
+              </span>
             </div>
           </div>
 
-          {/* Pro-Tip Quote from Screenshot */}
-          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs leading-relaxed flex items-start gap-2.5 mt-2">
-            <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5" />
+          {/* DIRECT START WORKOUT CTA INSIDE HERO CARD */}
+          <button
+            onClick={() => setIsWorkingOut(true)}
+            className="w-full py-4 mt-2 px-6 rounded-2xl bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 text-white font-display font-black tracking-wider text-lg flex items-center justify-center gap-2.5 shadow-xl shadow-orange-500/30 active:scale-[0.98] transition-transform hover:brightness-105"
+          >
+            <Play className="w-5 h-5 fill-current" />
+            <span>START WORKOUT ({routine.totalRounds} ROUNDS)</span>
+          </button>
+
+          {/* Pro-Tip Quote */}
+          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs leading-relaxed flex items-start gap-2.5 mt-3.5">
+            <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
             <div>
-              <span className="font-semibold block mb-0.5">Focus on Form over Speed:</span>
-              Controlled repetitions with proper tension build muscle faster than sloppy, rushed reps.
+              <span className="font-display font-bold uppercase tracking-wider block mb-0.5">
+                FOCUS ON FORM OVER SPEED:
+              </span>
+              <span className="text-[11px] text-slate-300">
+                Controlled repetitions with proper tension build muscle faster than sloppy, rushed reps.
+              </span>
             </div>
           </div>
         </div>
@@ -240,11 +255,11 @@ export default function Home() {
         {/* Exercises Preview List */}
         <div className="flex flex-col gap-2.5">
           <div className="flex items-center justify-between px-1">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
-              {routine.exercises.length} Exercises in Circuit
+            <h3 className="text-xs font-display font-bold uppercase tracking-widest text-[var(--text-muted)]">
+              {routine.exercises.length} EXERCISES IN CIRCUIT
             </h3>
-            <span className="text-xs text-orange-500 font-semibold">
-              ~{Math.round(((routine.workDurationSeconds + routine.restDurationSeconds) * routine.exercises.length * routine.totalRounds) / 60)} Mins Total
+            <span className="text-xs font-display font-bold text-orange-500 tracking-wider">
+              ~{Math.round(((routine.workDurationSeconds + routine.restDurationSeconds) * routine.exercises.length * routine.totalRounds) / 60)} MINS TOTAL
             </span>
           </div>
 
@@ -255,18 +270,18 @@ export default function Home() {
                 className="flex items-center justify-between p-3.5 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-orange-500/30 transition-all"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] flex items-center justify-center font-bold text-xs text-[var(--text-secondary)]">
-                    {idx + 1}
+                  <div className="w-8 h-8 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] flex items-center justify-center font-display font-bold text-xs text-orange-500">
+                    0{idx + 1}
                   </div>
                   <div>
-                    <h4 className="font-bold text-sm text-[var(--text-primary)]">
+                    <h4 className="font-display font-bold text-base text-[var(--text-primary)] uppercase tracking-wide">
                       {ex.name}
                     </h4>
                     <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
                       {ex.targetMuscles.map((muscle) => (
                         <span
                           key={muscle}
-                          className="text-[10px] px-2 py-0.5 rounded-md bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] font-medium"
+                          className="text-[10px] font-display font-medium px-2 py-0.5 rounded bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)] uppercase"
                         >
                           {muscle}
                         </span>
@@ -284,12 +299,12 @@ export default function Home() {
         {sessions.length > 0 && (
           <div className="flex flex-col gap-2.5 pt-2">
             <div className="flex items-center justify-between px-1">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1.5">
+              <h3 className="text-xs font-display font-bold uppercase tracking-widest text-[var(--text-muted)] flex items-center gap-1.5">
                 <History className="w-3.5 h-3.5" />
-                <span>Workout History</span>
+                <span>WORKOUT HISTORY</span>
               </h3>
-              <span className="text-xs text-emerald-500 font-semibold">
-                {sessions.length} Completed
+              <span className="text-xs font-display font-bold text-emerald-500 tracking-wider">
+                {sessions.length} COMPLETED
               </span>
             </div>
 
@@ -297,29 +312,29 @@ export default function Home() {
               {sessions.slice(0, 4).map((s) => (
                 <div
                   key={s.id}
-                  className="flex items-center justify-between p-3 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs"
+                  className="flex items-center justify-between p-3.5 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs"
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
                       <Award className="w-4 h-4" />
                     </div>
                     <div>
-                      <span className="font-bold block text-[var(--text-primary)]">
+                      <span className="font-display font-bold text-sm block text-[var(--text-primary)] uppercase tracking-wide">
                         {s.routineTitle}
                       </span>
-                      <span className="text-[10px] text-[var(--text-muted)]">
+                      <span className="text-[10px] text-[var(--text-muted)] font-mono">
                         {new Date(s.completedAt).toLocaleDateString()} • {formatTime(s.totalSeconds)}
                       </span>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <span className="font-mono font-bold text-orange-500 block">
-                      ~{s.estimatedCalories} kcal
+                    <span className="font-display font-bold text-sm text-orange-500 block">
+                      ~{s.estimatedCalories} KCAL
                     </span>
-                    <span className="text-[9px] text-emerald-500 flex items-center justify-end gap-0.5">
+                    <span className="text-[9px] text-emerald-500 flex items-center justify-end gap-0.5 font-display font-semibold uppercase">
                       <CheckCircle2 className="w-2.5 h-2.5" />
-                      Saved
+                      SAVED
                     </span>
                   </div>
                 </div>
@@ -329,18 +344,11 @@ export default function Home() {
         )}
       </main>
 
-      {/* Sticky Mobile Start Action */}
-      <footer className="sticky bottom-0 pt-3 pb-2 bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)] to-transparent">
-        <button
-          onClick={() => setIsWorkingOut(true)}
-          className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-extrabold text-base flex items-center justify-center gap-2 shadow-xl shadow-orange-500/25 active:scale-[0.98] transition-transform"
-        >
-          <Play className="w-5 h-5 fill-current" />
-          <span>START WORKOUT ({routine.totalRounds} ROUNDS)</span>
-        </button>
-        <p className="text-[11px] text-center text-[var(--text-muted)] mt-2 flex items-center justify-center gap-1.5">
-          <Smartphone className="w-3.5 h-3.5" />
-          <span>Screen stays awake automatically during workout</span>
+      {/* Screen Wake Lock Footer Badge */}
+      <footer className="pt-2 pb-1 text-center">
+        <p className="text-[11px] text-[var(--text-muted)] flex items-center justify-center gap-1.5 font-sans">
+          <Smartphone className="w-3.5 h-3.5 text-orange-500" />
+          <span>Screen wake lock active: display remains awake during training</span>
         </p>
       </footer>
 
@@ -355,7 +363,7 @@ export default function Home() {
         />
       )}
 
-      {/* Auth Modal (Sign In / Register / Account) */}
+      {/* Auth Modal */}
       {isAuthOpen && (
         <AuthModal
           currentUser={currentUser}
