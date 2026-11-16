@@ -19,6 +19,7 @@
 | **Phase 6** | **Authentication, History & Custom Builder** | Multi-user JWT auth, Workout completion summary, MongoDB session history & streaks, Custom routine editor | `[x] Completed` |
 | **Phase 7** | **Verification, Mobile Polish & AGENTS.md** | Automated TypeScript build verification, mobile touch ergonomics test, documentation in AGENTS.md, final walkthrough | `[x] Completed` |
 | **Phase 8** | **Tactical UI/UX Overhaul & Scrollbar Fix** | Eliminate horizontal scrollbar jumping (`scrollbar-gutter: stable`), Oswald & Inter typography, athletic silhouettes replacing stick figures, Hero Start CTA | `[x] Completed` |
+| **Phase 9** | **Responsive Desktop & Widescreen Upgrade** | 2-column widescreen desktop layout (`max-w-5xl md:grid-cols-12`), split-screen workout timer with sticky controls and coach panel, MongoDB Atlas cloud live integration | `[x] Completed` |
 
 ---
 
@@ -85,3 +86,16 @@
 - [x] Verify Mobile viewport responsiveness and touch ergonomics (375px - 430px)
 - [x] Generate comprehensive `AGENTS.md` in repository root for future maintenance
 - [x] Verify cloud MongoDB sync and offline fallback behavior
+
+### Phase 8: Tactical UI/UX Overhaul & Scrollbar Fix
+- [x] Integrate Google Fonts `Oswald` (display/tactical) and `Inter` (body)
+- [x] Fix horizontal layout shifts with `scrollbar-gutter: stable; overflow-y: scroll;`
+- [x] Replace stick figures with muscular athletic silhouette figures with tension lines
+- [x] Embed large, prominent "START WORKOUT" CTA directly inside Hero protocol card
+
+### Phase 9: Responsive Desktop & Widescreen Upgrade
+- [x] Upgrade container from mobile-only 448px (`max-w-md`) to responsive widescreen (`max-w-5xl md:grid-cols-12`)
+- [x] Desktop Split View Dashboard: Left column (Hero + Workout History), Right column (6 Exercises list)
+- [x] Desktop Split View Workout Timer: Left column (Circular countdown clock + action controls), Right column (Athletic motion guide + Form coach / Up Next card)
+- [x] Connected to MongoDB Atlas Cloud via Vercel production environment variables (`MONGODB_URI`, `JWT_SECRET`)
+
