@@ -14,15 +14,21 @@ import {
   Play, 
   ChevronRight,
   Sparkles,
-  Layers,
-  Heart
+  Award,
+  History
 } from "lucide-react";
 import { DEFAULT_ROUTINE } from "@/data/defaultRoutine";
+import { WorkoutTimer } from "@/components/WorkoutTimer";
+import { getLocalSessions, syncPendingSessions } from "@/lib/offlineQueue";
+import { WorkoutSession } from "@/types";
+import { formatTime } from "@/lib/utils";
 
 export default function Home() {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [soundEnabled, setSoundEnabled] = useState(false); // Default OFF as requested
   const [voiceEnabled, setVoiceEnabled] = useState(false); // Default OFF as requested
+  const [isWorkingOut, setIsWorkingOut] = useState(false);
+  const [sessions, setSessions] = useState<WorkoutSession[]>([]);
 
   useEffect(() => {
     // Sync theme class to document
@@ -33,8 +39,26 @@ export default function Home() {
     }
   }, [theme]);
 
+  useEffect(() => {
+    // Load local history on mount & attempt cloud sync
+    const local = getLocalSessions();
+    setSessions(local);
+    syncPendingSessions().then((res) => {
+      if (res.syncedCount > 0) {
+        setSessions(getLocalSessions());
+      }
+    });
+  }, []);
+
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
+  const handleWorkoutComplete = (session: WorkoutSession) => {
+    setSessions((prev) => [session, ...prev]);
+    setIsWorkingOut(false);
+    // Background cloud sync attempt
+    syncPendingSessions();
   };
 
   return (
@@ -98,7 +122,7 @@ export default function Home() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 py-6 flex flex-col gap-5">
+      <main className="flex-1 py-5 flex flex-col gap-5">
         {/* Hero Circuit Card */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[var(--bg-surface)] to-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] p-6 shadow-xl">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-xs font-semibold mb-3">
@@ -115,7 +139,7 @@ export default function Home() {
           </p>
 
           {/* Quick Metrics Grid */}
-          <div className="grid grid-cols-3 gap-2.5 my-4">
+          <div className="grid grid-cols-3 gap-2.5 my-3">
             <div className="p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
               <span className="block text-xl font-extrabold text-orange-500">40s</span>
               <span className="text-[11px] font-medium text-[var(--text-muted)] uppercase">Work</span>
@@ -180,11 +204,54 @@ export default function Home() {
             ))}
           </div>
         </div>
+
+        {/* Previous Workouts / History Section */}
+        {sessions.length > 0 && (
+          <div className="flex flex-col gap-2.5 pt-2">
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1.5">
+                <History className="w-3.5 h-3.5" />
+                <span>Recent Workouts</span>
+              </h3>
+              <span className="text-xs text-emerald-500 font-semibold">
+                {sessions.length} Logged
+              </span>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              {sessions.slice(0, 3).map((s) => (
+                <div
+                  key={s.id}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                      <Award className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="font-bold block text-[var(--text-primary)]">
+                        {s.routineTitle}
+                      </span>
+                      <span className="text-[10px] text-[var(--text-muted)]">
+                        {new Date(s.completedAt).toLocaleDateString()} • {formatTime(s.totalSeconds)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <span className="font-mono font-bold text-orange-500">
+                    ~{s.estimatedCalories} kcal
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Sticky Mobile Start Action */}
       <footer className="sticky bottom-0 pt-3 pb-2 bg-gradient-to-t from-[var(--bg-primary)] via-[var(--bg-primary)] to-transparent">
         <button
+          onClick={() => setIsWorkingOut(true)}
           className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-extrabold text-base flex items-center justify-center gap-2 shadow-xl shadow-orange-500/25 active:scale-[0.98] transition-transform"
         >
           <Play className="w-5 h-5 fill-current" />
@@ -195,6 +262,17 @@ export default function Home() {
           <span>Screen stays awake automatically during workout</span>
         </p>
       </footer>
+
+      {/* Live Fullscreen Workout Timer Modal */}
+      {isWorkingOut && (
+        <WorkoutTimer
+          routine={DEFAULT_ROUTINE}
+          onExit={() => setIsWorkingOut(false)}
+          onComplete={handleWorkoutComplete}
+          initialSoundEnabled={soundEnabled}
+          initialVoiceEnabled={voiceEnabled}
+        />
+      )}
     </div>
   );
 }

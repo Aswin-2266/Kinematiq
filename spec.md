@@ -15,7 +15,7 @@
 | **Phase 2** | **MongoDB Layer & Data Models** | Mongoose connection pool, User, Exercise, Routine, WorkoutSession schemas, offline sync engine, seed data for 6 screenshot exercises | `[x] Completed` |
 | **Phase 3** | **Mobile APIs (Audio Engine & Wake Lock)** | Web Audio API gym beeps (zero external assets), Web Speech API voice coach, Screen Wake Lock API (keeps phone screen on) | `[x] Completed` |
 | **Phase 4** | **Visual Form Motion Engine** | High-contrast animated visual guides for all 6 exercises (Squats, Push-Ups, Reverse Lunges, Glute Bridges, Plank, Burpees/Mountain Climbers) + Form Cues | `[x] Completed` |
-| **Phase 5** | **Workout Interval Timer & State Machine** | 40s Work / 20s Rest / 60s Round Break cycle, 3 full rounds, "Up Next" preview during 20s rest, large mobile touch targets | `[ ] Pending` |
+| **Phase 5** | **Workout Interval Timer & State Machine** | 40s Work / 20s Rest / 60s Round Break cycle, 3 full rounds, "Up Next" preview during 20s rest, large mobile touch targets | `[x] Completed` |
 | **Phase 6** | **Authentication, History & Custom Builder** | Multi-user JWT auth, Workout completion summary, MongoDB session history & streaks, Custom routine editor | `[ ] Pending` |
 | **Phase 7** | **Verification, Mobile Polish & AGENTS.md** | Automated TypeScript build verification, mobile touch ergonomics test, documentation in AGENTS.md, final walkthrough | `[ ] Pending` |
 
@@ -66,11 +66,11 @@
 - [x] Add One-Tap Easier Modification (Regression) toggle (e.g., switch to Knee Push-Ups or Step-back Lunges mid-workout if fatigued)
 
 ### Phase 5: Interval Workout Timer & State Machine
-- [ ] Develop deterministic interval timer engine (timestamp delta-based to prevent mobile drift)
-- [ ] Implement state machine: `IDLE` -> `COUNTDOWN` -> `WORK (40s)` -> `REST (20s)` -> `ROUND_BREAK (60s)` -> `FINISHED`
-- [ ] Build Circular SVG Progress Ring with animated pulse
-- [ ] Build "Up Next" preview card that displays during the 20-second rest interval
-- [ ] Build sticky mobile action bar: Pause / Resume, Skip, Back, Sound Mute, Voice Coach Toggle
+- [x] Develop deterministic interval timer engine (timestamp delta-based to prevent mobile drift)
+- [x] Implement state machine: `IDLE` -> `COUNTDOWN` -> `WORK (40s)` -> `REST (20s)` -> `ROUND_BREAK (60s)` -> `FINISHED`
+- [x] Build Circular SVG Progress Ring with animated pulse
+- [x] Build "Up Next" preview card that displays during the 20-second rest interval
+- [x] Build sticky mobile action bar: Pause / Resume, Skip, Back, Sound Mute, Voice Coach Toggle
 
 ### Phase 6: Authentication, History & Custom Builder
 - [ ] Next.js API routes for Auth (`/api/auth/register`, `/api/auth/login`, `/api/auth/me`)
