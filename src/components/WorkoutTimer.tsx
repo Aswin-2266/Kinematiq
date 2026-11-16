@@ -63,7 +63,6 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
       ? routine.exercises[currentExerciseIndex + 1]
       : routine.exercises[0];
 
-  // Request Wake Lock on mount, release on unmount
   useEffect(() => {
     wakeLockManager.request();
     return () => {
@@ -234,104 +233,104 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
   }[phase];
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#080B11] text-[#F8FAFC] flex flex-col justify-between p-4 max-w-md mx-auto overflow-y-scroll [scrollbar-gutter:stable] select-none">
+    <div className="fixed inset-0 z-50 bg-[#080B11] text-[#F8FAFC] flex flex-col justify-between p-4 md:p-8 max-w-5xl mx-auto overflow-y-scroll [scrollbar-gutter:stable] select-none">
       {/* Top Tactical HUD Bar */}
       <header className="flex items-center justify-between py-2 border-b border-[#1E2B42]">
         {/* Round Badge */}
-        <div className="flex items-center gap-2">
-          <div className="px-3 py-1 rounded bg-[#0F1624] border border-[#1E2B42] text-xs font-display font-bold tracking-wider flex items-center gap-1.5 uppercase">
-            <Zap className="w-3.5 h-3.5 text-orange-500 fill-current" />
+        <div className="flex items-center gap-3">
+          <div className="px-3.5 py-1.5 rounded-lg bg-[#0F1624] border border-[#1E2B42] text-xs md:text-sm font-display font-bold tracking-wider flex items-center gap-2 uppercase">
+            <Zap className="w-4 h-4 text-orange-500 fill-current" />
             <span>
               ROUND {currentRound} / {routine.totalRounds}
             </span>
           </div>
 
-          <span className="text-xs font-mono font-semibold text-slate-400">
+          <span className="text-sm font-mono font-bold text-slate-400">
             {formatTime(totalSecondsElapsed)}
           </span>
         </div>
 
         {/* Audio Controls & Exit */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <button
             onClick={toggleSound}
-            className={`p-2 rounded-xl border transition-all ${
+            className={`p-2.5 rounded-xl border transition-all ${
               soundEnabled
                 ? "bg-emerald-500/15 border-emerald-500 text-emerald-500"
-                : "bg-[#0F1624] border-[#1E2B42] text-slate-500"
+                : "bg-[#0F1624] border-[#1E2B42] text-slate-500 hover:border-emerald-500/30"
             }`}
             title={soundEnabled ? "Audio: ON" : "Audio: OFF"}
             aria-label="Toggle Sound"
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            {soundEnabled ? <Volume2 className="w-4 h-4 md:w-5 md:h-5" /> : <VolumeX className="w-4 h-4 md:w-5 md:h-5" />}
           </button>
 
           <button
             onClick={toggleVoice}
-            className={`p-2 rounded-xl border transition-all ${
+            className={`p-2.5 rounded-xl border transition-all ${
               voiceEnabled
                 ? "bg-orange-500/15 border-orange-500 text-orange-500"
-                : "bg-[#0F1624] border-[#1E2B42] text-slate-500"
+                : "bg-[#0F1624] border-[#1E2B42] text-slate-500 hover:border-orange-500/30"
             }`}
             title={voiceEnabled ? "Voice: ON" : "Voice: OFF"}
             aria-label="Toggle Voice Coach"
           >
-            {voiceEnabled ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+            {voiceEnabled ? <Mic className="w-4 h-4 md:w-5 md:h-5" /> : <MicOff className="w-4 h-4 md:w-5 md:h-5" />}
           </button>
 
           <button
             onClick={onExit}
-            className="p-2 rounded-xl bg-[#0F1624] border border-[#1E2B42] text-slate-400 hover:text-red-400 transition-colors"
+            className="p-2.5 rounded-xl bg-[#0F1624] border border-[#1E2B42] text-slate-400 hover:text-red-400 transition-colors"
             title="Exit Workout"
             aria-label="Exit Workout"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
       </header>
 
-      {/* Main Interval Display Area */}
-      <main className="flex-1 flex flex-col items-center justify-center py-4 gap-4">
+      {/* Main Interval Display Area: Responsive 1-col on Mobile, 2-col on Laptop/Desktop */}
+      <main className="flex-1 flex flex-col justify-center py-4">
         {phase === "completed" ? (
           /* WORKOUT COMPLETED CELEBRATION */
-          <div className="w-full flex flex-col items-center text-center gap-4 py-8 animate-fade-in">
+          <div className="w-full max-w-lg mx-auto flex flex-col items-center text-center gap-4 py-8 animate-fade-in">
             <div className="w-20 h-20 rounded-2xl bg-emerald-500/10 border-2 border-emerald-500 flex items-center justify-center text-emerald-500 shadow-2xl shadow-emerald-500/20">
               <Award className="w-10 h-10" />
             </div>
 
             <div>
-              <h2 className="text-3xl font-display font-black tracking-wide text-white uppercase">
+              <h2 className="text-3xl md:text-4xl font-display font-black tracking-wide text-white uppercase">
                 CIRCUIT COMPLETE
               </h2>
-              <p className="text-sm text-slate-400 mt-1">
+              <p className="text-sm md:text-base text-slate-400 mt-1">
                 Crushed all {routine.totalRounds} rounds of the protocol.
               </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 w-full my-2">
-              <div className="p-3.5 rounded-2xl bg-[#0F1624] border border-[#1E2B42]">
-                <span className="block text-2xl font-display font-bold text-orange-500">
+            <div className="grid grid-cols-3 gap-3 w-full my-3">
+              <div className="p-4 rounded-2xl bg-[#0F1624] border border-[#1E2B42]">
+                <span className="block text-2xl md:text-3xl font-display font-bold text-orange-500">
                   {formatTime(totalSecondsElapsed)}
                 </span>
-                <span className="text-[10px] font-display font-bold uppercase text-slate-500 tracking-wider">
+                <span className="text-[10px] md:text-xs font-display font-bold uppercase text-slate-500 tracking-wider">
                   TIME
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#0F1624] border border-[#1E2B42]">
-                <span className="block text-2xl font-display font-bold text-emerald-500">
+              <div className="p-4 rounded-2xl bg-[#0F1624] border border-[#1E2B42]">
+                <span className="block text-2xl md:text-3xl font-display font-bold text-emerald-500">
                   {routine.totalRounds}
                 </span>
-                <span className="text-[10px] font-display font-bold uppercase text-slate-500 tracking-wider">
+                <span className="text-[10px] md:text-xs font-display font-bold uppercase text-slate-500 tracking-wider">
                   ROUNDS
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-[#0F1624] border border-[#1E2B42]">
-                <span className="block text-2xl font-display font-bold text-blue-500">
+              <div className="p-4 rounded-2xl bg-[#0F1624] border border-[#1E2B42]">
+                <span className="block text-2xl md:text-3xl font-display font-bold text-blue-500">
                   ~{Math.round((totalSecondsElapsed / 60) * 9.5)}
                 </span>
-                <span className="text-[10px] font-display font-bold uppercase text-slate-500 tracking-wider">
+                <span className="text-[10px] md:text-xs font-display font-bold uppercase text-slate-500 tracking-wider">
                   CALORIES
                 </span>
               </div>
@@ -339,117 +338,164 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
 
             <button
               onClick={onExit}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-display font-bold tracking-wider text-base flex items-center justify-center gap-2 shadow-xl shadow-orange-500/25 active:scale-[0.98] transition-transform"
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-display font-bold tracking-wider text-base md:text-lg flex items-center justify-center gap-2 shadow-xl shadow-orange-500/25 active:scale-[0.98] transition-transform"
             >
               <CheckCircle className="w-5 h-5" />
               <span>LOG SESSION & EXIT</span>
             </button>
           </div>
         ) : (
-          /* ACTIVE INTERVAL HUD */
-          <div className="w-full flex flex-col items-center gap-3">
-            {/* Tactical Interval Banner */}
-            <div
-              className={`px-4 py-1 rounded text-xs font-display font-bold uppercase tracking-widest border transition-all ${
-                phase === "work"
-                  ? "bg-orange-500/15 border-orange-500 text-orange-500 animate-pulse"
+          /* ACTIVE INTERVAL HUD: Split Grid on Desktop, Stacked on Mobile */
+          <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+            {/* LEFT PANEL: Circular Countdown Timer & Primary Controls */}
+            <div className="md:col-span-5 flex flex-col items-center justify-center gap-3">
+              {/* Tactical Interval Banner */}
+              <div
+                className={`px-4 py-1.5 rounded text-xs font-display font-bold uppercase tracking-widest border transition-all ${
+                  phase === "work"
+                    ? "bg-orange-500/15 border-orange-500 text-orange-500 animate-pulse"
+                    : phase === "rest"
+                    ? "bg-emerald-500/15 border-emerald-500 text-emerald-500"
+                    : phase === "round-break"
+                    ? "bg-blue-500/15 border-blue-500 text-blue-500"
+                    : "bg-amber-500/15 border-amber-500 text-amber-500"
+                }`}
+              >
+                {phase === "get-ready"
+                  ? "GET READY // 3 SECONDS"
+                  : phase === "work"
+                  ? `WORK INTERVAL // ${routine.workDurationSeconds}S`
                   : phase === "rest"
-                  ? "bg-emerald-500/15 border-emerald-500 text-emerald-500"
-                  : phase === "round-break"
-                  ? "bg-blue-500/15 border-blue-500 text-blue-500"
-                  : "bg-amber-500/15 border-amber-500 text-amber-500"
-              }`}
-            >
-              {phase === "get-ready"
-                ? "GET READY // 3 SECONDS"
-                : phase === "work"
-                ? `WORK INTERVAL // ${routine.workDurationSeconds}S`
-                : phase === "rest"
-                ? `RECOVERY INTERVAL // ${routine.restDurationSeconds}S`
-                : `ROUND ${currentRound} BREAK // 60S`}
-            </div>
+                  ? `RECOVERY INTERVAL // ${routine.restDurationSeconds}S`
+                  : `ROUND ${currentRound} BREAK // 60S`}
+              </div>
 
-            {/* Giant Circular Digital Bezel */}
-            <div className="relative w-44 h-44 flex items-center justify-center my-1">
-              <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  className="stroke-[#162033]"
-                  strokeWidth="7"
-                  fill="none"
-                />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  className={`transition-all duration-300 ${phaseColors}`}
-                  strokeWidth="7"
-                  strokeDasharray="283"
-                  strokeDashoffset={strokeDashoffset}
-                  strokeLinecap="round"
-                  fill="none"
-                />
-              </svg>
+              {/* Giant Circular Digital Bezel */}
+              <div className="relative w-48 h-48 md:w-56 md:h-56 flex items-center justify-center my-1">
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    className="stroke-[#162033]"
+                    strokeWidth="7"
+                    fill="none"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    className={`transition-all duration-300 ${phaseColors}`}
+                    strokeWidth="7"
+                    strokeDasharray="283"
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                    fill="none"
+                  />
+                </svg>
 
-              {/* Huge High-Impact Oswald Numerals */}
-              <div className="absolute flex flex-col items-center justify-center">
-                <span className="text-7xl font-display font-black tracking-tight text-white leading-none">
-                  {secondsRemaining}
-                </span>
-                <span className="text-[10px] font-display font-bold uppercase tracking-widest text-slate-400 mt-1">
-                  SECONDS
-                </span>
+                {/* Huge High-Impact Oswald Numerals */}
+                <div className="absolute flex flex-col items-center justify-center">
+                  <span className="text-7xl md:text-8xl font-display font-black tracking-tight text-white leading-none">
+                    {secondsRemaining}
+                  </span>
+                  <span className="text-[10px] md:text-xs font-display font-bold uppercase tracking-widest text-slate-400 mt-1">
+                    SECONDS
+                  </span>
+                </div>
+              </div>
+
+              {/* Tactical Controller Bar for Desktop/Laptop */}
+              <div className="w-full hidden md:flex items-center justify-between gap-3 mt-2">
+                <button
+                  onClick={handleSkipBack}
+                  className="w-14 h-14 rounded-xl bg-[#0F1624] border border-[#1E2B42] flex items-center justify-center text-slate-300 active:scale-95 transition-transform hover:border-orange-500/40"
+                  title="Previous Exercise / Restart Interval"
+                  aria-label="Previous Exercise"
+                >
+                  <SkipBack className="w-6 h-6" />
+                </button>
+
+                <button
+                  onClick={() => setIsRunning(!isRunning)}
+                  className={`flex-1 h-14 rounded-xl font-display font-bold tracking-wider text-base flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-transform ${
+                    isRunning
+                      ? "bg-amber-500/15 border border-amber-500 text-amber-400"
+                      : "bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-orange-500/30"
+                  }`}
+                >
+                  {isRunning ? (
+                    <>
+                      <Pause className="w-5 h-5 fill-current" />
+                      <span>PAUSE</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5 fill-current" />
+                      <span>RESUME</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={handleSkipForward}
+                  className="w-14 h-14 rounded-xl bg-[#0F1624] border border-[#1E2B42] flex items-center justify-center text-slate-300 active:scale-95 transition-transform hover:border-orange-500/40"
+                  title="Skip to Next Interval"
+                  aria-label="Skip Forward"
+                >
+                  <SkipForward className="w-6 h-6" />
+                </button>
               </div>
             </div>
 
-            {/* Dynamic View: UpNextCard during REST, or Visual Guide + FormCoach during WORK */}
-            {phase === "rest" || phase === "round-break" ? (
-              <div className="w-full">
-                {phase === "round-break" ? (
-                  <div className="p-5 rounded-2xl bg-[#0F1624] border border-blue-500/30 text-center flex flex-col items-center gap-2">
-                    <Coffee className="w-8 h-8 text-blue-500" />
-                    <h3 className="text-lg font-display font-bold tracking-wide text-white uppercase">
-                      ROUND {currentRound} RECOVERY
-                    </h3>
-                    <p className="text-xs text-slate-400">
-                      Rehydrate and steady your breathing. Round {currentRound + 1} begins with{" "}
-                      <span className="font-bold text-orange-500">
-                        {routine.exercises[0].name}
-                      </span>
-                      .
-                    </p>
-                  </div>
-                ) : (
-                  <UpNextCard nextExercise={nextExercise} secondsRemaining={secondsRemaining} />
-                )}
-              </div>
-            ) : (
-              <div className="w-full flex flex-col gap-3">
-                <VisualExerciseGuide
-                  exercise={currentExercise}
-                  isAlternative={useAlternative}
-                  isRegression={useRegression}
-                />
+            {/* RIGHT PANEL: Dynamic View (Visual Guide + Form Coach during WORK, UpNext during REST) */}
+            <div className="md:col-span-7 w-full flex flex-col gap-3">
+              {phase === "rest" || phase === "round-break" ? (
+                <div className="w-full">
+                  {phase === "round-break" ? (
+                    <div className="p-6 rounded-3xl bg-[#0F1624] border border-blue-500/30 text-center flex flex-col items-center gap-3">
+                      <Coffee className="w-10 h-10 text-blue-500" />
+                      <h3 className="text-xl md:text-2xl font-display font-bold tracking-wide text-white uppercase">
+                        ROUND {currentRound} RECOVERY
+                      </h3>
+                      <p className="text-xs md:text-sm text-slate-300 max-w-sm">
+                        Rehydrate and steady your breathing. Round {currentRound + 1} begins with{" "}
+                        <span className="font-bold text-orange-500">
+                          {routine.exercises[0].name}
+                        </span>
+                        .
+                      </p>
+                    </div>
+                  ) : (
+                    <UpNextCard nextExercise={nextExercise} secondsRemaining={secondsRemaining} />
+                  )}
+                </div>
+              ) : (
+                <div className="w-full flex flex-col gap-3">
+                  <VisualExerciseGuide
+                    exercise={currentExercise}
+                    isAlternative={useAlternative}
+                    isRegression={useRegression}
+                  />
 
-                <FormCoachCard
-                  exercise={currentExercise}
-                  isAlternative={useAlternative}
-                  onToggleAlternative={() => setUseAlternative(!useAlternative)}
-                  isRegression={useRegression}
-                  onToggleRegression={() => setUseRegression(!useRegression)}
-                  isCompact={true}
-                />
-              </div>
-            )}
+                  <FormCoachCard
+                    exercise={currentExercise}
+                    isAlternative={useAlternative}
+                    onToggleAlternative={() => setUseAlternative(!useAlternative)}
+                    isRegression={useRegression}
+                    onToggleRegression={() => setUseRegression(!useRegression)}
+                    isCompact={false}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         )}
       </main>
 
-      {/* Sticky Bottom Tactile Controller Bar (52px+ Hit Targets) */}
+      {/* Mobile-Only Bottom Sticky Controller Bar (Hidden on Desktop because it is beside timer) */}
       {phase !== "completed" && (
-        <footer className="sticky bottom-0 pt-3 pb-2 bg-[#080B11] border-t border-[#1E2B42] flex items-center justify-between gap-3">
+        <footer className="sticky bottom-0 pt-3 pb-2 bg-[#080B11] border-t border-[#1E2B42] flex md:hidden items-center justify-between gap-3">
           <button
             onClick={handleSkipBack}
             className="w-14 h-14 rounded-xl bg-[#0F1624] border border-[#1E2B42] flex items-center justify-center text-slate-300 active:scale-95 transition-transform hover:border-orange-500/40"

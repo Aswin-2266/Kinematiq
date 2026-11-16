@@ -18,8 +18,8 @@ import {
   Sliders, 
   User as UserIcon, 
   CheckCircle2,
-  Zap,
-  Target
+  Target,
+  Sparkles
 } from "lucide-react";
 import { DEFAULT_ROUTINE } from "@/data/defaultRoutine";
 import { WorkoutTimer } from "@/components/WorkoutTimer";
@@ -31,8 +31,8 @@ import { formatTime } from "@/lib/utils";
 
 export default function Home() {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
-  const [soundEnabled, setSoundEnabled] = useState(false); // Default OFF as requested
-  const [voiceEnabled, setVoiceEnabled] = useState(false); // Default OFF as requested
+  const [soundEnabled, setSoundEnabled] = useState(false); // Default OFF
+  const [voiceEnabled, setVoiceEnabled] = useState(false); // Default OFF
   const [isWorkingOut, setIsWorkingOut] = useState(false);
   const [routine, setRoutine] = useState<Routine>(DEFAULT_ROUTINE);
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
@@ -94,25 +94,25 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col justify-between p-4 md:p-8 max-w-md mx-auto transition-colors duration-150 [scrollbar-gutter:stable]">
+    <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col justify-between p-4 md:p-8 max-w-5xl mx-auto transition-colors duration-150 [scrollbar-gutter:stable]">
       {/* Tactical Top Bar */}
-      <header className="flex items-center justify-between py-3 border-b border-[var(--border-subtle)]">
+      <header className="flex items-center justify-between py-3 md:py-4 border-b border-[var(--border-subtle)]">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/25">
-            <Flame className="w-5 h-5 fill-current" />
+          <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/25">
+            <Flame className="w-5 h-5 md:w-6 md:h-6 fill-current" />
           </div>
           <div>
-            <h1 className="text-2xl font-display font-black tracking-wider uppercase text-[var(--text-primary)] leading-none">
+            <h1 className="text-2xl md:text-3xl font-display font-black tracking-wider uppercase text-[var(--text-primary)] leading-none">
               KINEMATIQ
             </h1>
-            <p className="text-[10px] font-display font-bold text-orange-500 tracking-widest uppercase mt-0.5">
+            <p className="text-[10px] md:text-xs font-display font-bold text-orange-500 tracking-widest uppercase mt-0.5">
               INTERVAL PROTOCOL
             </p>
           </div>
         </div>
 
         {/* Global Control Toggles */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {/* Sound Toggle (Default OFF) */}
           <button
             onClick={() => setSoundEnabled(!soundEnabled)}
@@ -124,7 +124,7 @@ export default function Home() {
             title={soundEnabled ? "Audio Sound: ON" : "Audio Sound: OFF (Tap to enable)"}
             aria-label="Toggle Sound"
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            {soundEnabled ? <Volume2 className="w-4 h-4 md:w-5 md:h-5" /> : <VolumeX className="w-4 h-4 md:w-5 md:h-5" />}
           </button>
 
           {/* Voice Coach Toggle (Default OFF) */}
@@ -138,7 +138,7 @@ export default function Home() {
             title={voiceEnabled ? "Voice Coach: ON" : "Voice Coach: OFF (Tap to enable)"}
             aria-label="Toggle Voice Coach"
           >
-            {voiceEnabled ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+            {voiceEnabled ? <Mic className="w-4 h-4 md:w-5 md:h-5" /> : <MicOff className="w-4 h-4 md:w-5 md:h-5" />}
           </button>
 
           {/* Theme Switcher */}
@@ -148,7 +148,7 @@ export default function Home() {
             title={`Switch to ${theme === "dark" ? "Light" : "Dark"} Mode`}
             aria-label="Toggle Theme"
           >
-            {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
+            {theme === "dark" ? <Sun className="w-4 h-4 md:w-5 md:h-5 text-amber-400" /> : <Moon className="w-4 h-4 md:w-5 md:h-5 text-slate-700" />}
           </button>
 
           {/* User Account / Profile */}
@@ -156,132 +156,189 @@ export default function Home() {
             onClick={() => setIsAuthOpen(true)}
             className={`p-2.5 rounded-xl border transition-all ${
               currentUser
-                ? "bg-gradient-to-tr from-orange-500 to-amber-500 text-white font-display font-bold text-xs"
+                ? "bg-gradient-to-tr from-orange-500 to-amber-500 text-white font-display font-bold text-xs md:text-sm px-3 flex items-center gap-1.5"
                 : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-primary)] hover:border-orange-500/40"
             }`}
             title={currentUser ? `Signed in as ${currentUser.name}` : "Sign In to sync with MongoDB"}
             aria-label="Account Settings"
           >
             {currentUser ? (
-              <span className="w-4 h-4 flex items-center justify-center font-black">
-                {currentUser.name.charAt(0).toUpperCase()}
-              </span>
+              <>
+                <span className="w-4 h-4 md:w-5 md:h-5 flex items-center justify-center font-black">
+                  {currentUser.name.charAt(0).toUpperCase()}
+                </span>
+                <span className="hidden md:inline font-display text-xs">{currentUser.name}</span>
+              </>
             ) : (
-              <UserIcon className="w-4 h-4 text-[var(--text-muted)]" />
+              <UserIcon className="w-4 h-4 md:w-5 md:h-5 text-[var(--text-muted)]" />
             )}
           </button>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1 py-5 flex flex-col gap-5">
-        {/* Hero Circuit Card with Direct START Button */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[var(--bg-surface)] to-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] p-6 shadow-2xl">
-          {/* Tactical Badge & Customize Link */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-orange-500/10 border border-orange-500/30 text-orange-500 text-[11px] font-display font-bold uppercase tracking-widest">
-              <Target className="w-3.5 h-3.5" />
-              <span>PROTOCOL // FULL-BODY</span>
+      {/* Responsive Main Content: 1-col on Mobile, 2-col Widescreen on Laptop/Desktop */}
+      <main className="flex-1 py-6 grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+        {/* LEFT COLUMN: Hero Circuit Card & Workout History */}
+        <div className="md:col-span-6 flex flex-col gap-5">
+          {/* Hero Circuit Card */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[var(--bg-surface)] to-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] p-6 shadow-2xl">
+            {/* Tactical Badge & Customize Link */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-orange-500/10 border border-orange-500/30 text-orange-500 text-[11px] font-display font-bold uppercase tracking-widest">
+                <Target className="w-3.5 h-3.5" />
+                <span>PROTOCOL // FULL-BODY</span>
+              </div>
+
+              <button
+                onClick={() => setIsEditorOpen(true)}
+                className="inline-flex items-center gap-1 text-xs font-display font-bold uppercase tracking-wider text-orange-500 hover:text-orange-400 transition-colors"
+              >
+                <Sliders className="w-3.5 h-3.5" />
+                <span>CUSTOMIZE</span>
+              </button>
             </div>
 
+            <h2 className="text-3xl md:text-4xl font-display font-black tracking-wide text-[var(--text-primary)] mb-2 uppercase">
+              {routine.title}
+            </h2>
+
+            <p className="text-xs md:text-sm text-[var(--text-secondary)] mb-4 leading-relaxed font-sans">
+              {routine.description}
+            </p>
+
+            {/* Quick Metrics Grid */}
+            <div className="grid grid-cols-3 gap-3 my-4">
+              <div className="p-3.5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
+                <span className="block text-2xl md:text-3xl font-display font-black text-orange-500">
+                  {routine.workDurationSeconds}S
+                </span>
+                <span className="text-[10px] md:text-xs font-display font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                  WORK
+                </span>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
+                <span className="block text-2xl md:text-3xl font-display font-black text-emerald-500">
+                  {routine.restDurationSeconds}S
+                </span>
+                <span className="text-[10px] md:text-xs font-display font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                  REST
+                </span>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
+                <span className="block text-2xl md:text-3xl font-display font-black text-blue-500">
+                  {routine.totalRounds}
+                </span>
+                <span className="text-[10px] md:text-xs font-display font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                  ROUNDS
+                </span>
+              </div>
+            </div>
+
+            {/* DIRECT START WORKOUT CTA */}
             <button
-              onClick={() => setIsEditorOpen(true)}
-              className="inline-flex items-center gap-1 text-xs font-display font-bold uppercase tracking-wider text-orange-500 hover:text-orange-400 transition-colors"
+              onClick={() => setIsWorkingOut(true)}
+              className="w-full py-4 mt-2 px-6 rounded-2xl bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 text-white font-display font-black tracking-wider text-lg md:text-xl flex items-center justify-center gap-2.5 shadow-xl shadow-orange-500/30 active:scale-[0.98] transition-transform hover:brightness-105"
             >
-              <Sliders className="w-3.5 h-3.5" />
-              <span>CUSTOMIZE</span>
+              <Play className="w-5 h-5 fill-current" />
+              <span>START WORKOUT ({routine.totalRounds} ROUNDS)</span>
             </button>
-          </div>
 
-          <h2 className="text-3xl font-display font-black tracking-wide text-[var(--text-primary)] mb-1 uppercase">
-            {routine.title}
-          </h2>
-
-          <p className="text-xs text-[var(--text-secondary)] mb-4 leading-relaxed font-sans">
-            {routine.description}
-          </p>
-
-          {/* Quick Metrics Grid */}
-          <div className="grid grid-cols-3 gap-2.5 my-3">
-            <div className="p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
-              <span className="block text-2xl font-display font-black text-orange-500">
-                {routine.workDurationSeconds}S
-              </span>
-              <span className="text-[10px] font-display font-bold text-[var(--text-muted)] uppercase tracking-wider">
-                WORK
-              </span>
-            </div>
-            <div className="p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
-              <span className="block text-2xl font-display font-black text-emerald-500">
-                {routine.restDurationSeconds}S
-              </span>
-              <span className="text-[10px] font-display font-bold text-[var(--text-muted)] uppercase tracking-wider">
-                REST
-              </span>
-            </div>
-            <div className="p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
-              <span className="block text-2xl font-display font-black text-blue-500">
-                {routine.totalRounds}
-              </span>
-              <span className="text-[10px] font-display font-bold text-[var(--text-muted)] uppercase tracking-wider">
-                ROUNDS
-              </span>
+            {/* Pro-Tip Quote */}
+            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs leading-relaxed flex items-start gap-2.5 mt-4">
+              <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
+              <div>
+                <span className="font-display font-bold uppercase tracking-wider block mb-0.5">
+                  FOCUS ON FORM OVER SPEED:
+                </span>
+                <span className="text-xs text-slate-300">
+                  Controlled repetitions with proper tension build muscle faster than sloppy, rushed reps.
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* DIRECT START WORKOUT CTA INSIDE HERO CARD */}
-          <button
-            onClick={() => setIsWorkingOut(true)}
-            className="w-full py-4 mt-2 px-6 rounded-2xl bg-gradient-to-r from-orange-500 via-orange-600 to-amber-500 text-white font-display font-black tracking-wider text-lg flex items-center justify-center gap-2.5 shadow-xl shadow-orange-500/30 active:scale-[0.98] transition-transform hover:brightness-105"
-          >
-            <Play className="w-5 h-5 fill-current" />
-            <span>START WORKOUT ({routine.totalRounds} ROUNDS)</span>
-          </button>
+          {/* Previous Workouts / History Section */}
+          {sessions.length > 0 && (
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-center justify-between px-1">
+                <h3 className="text-xs font-display font-bold uppercase tracking-widest text-[var(--text-muted)] flex items-center gap-1.5">
+                  <History className="w-3.5 h-3.5" />
+                  <span>WORKOUT HISTORY</span>
+                </h3>
+                <span className="text-xs font-display font-bold text-emerald-500 tracking-wider">
+                  {sessions.length} COMPLETED
+                </span>
+              </div>
 
-          {/* Pro-Tip Quote */}
-          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs leading-relaxed flex items-start gap-2.5 mt-3.5">
-            <ShieldAlert className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
-            <div>
-              <span className="font-display font-bold uppercase tracking-wider block mb-0.5">
-                FOCUS ON FORM OVER SPEED:
-              </span>
-              <span className="text-[11px] text-slate-300">
-                Controlled repetitions with proper tension build muscle faster than sloppy, rushed reps.
-              </span>
+              <div className="grid grid-cols-1 gap-2">
+                {sessions.slice(0, 4).map((s) => (
+                  <div
+                    key={s.id}
+                    className="flex items-center justify-between p-3.5 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                        <Award className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="font-display font-bold text-sm block text-[var(--text-primary)] uppercase tracking-wide">
+                          {s.routineTitle}
+                        </span>
+                        <span className="text-[10px] text-[var(--text-muted)] font-mono">
+                          {new Date(s.completedAt).toLocaleDateString()} • {formatTime(s.totalSeconds)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <span className="font-display font-bold text-sm text-orange-500 block">
+                        ~{s.estimatedCalories} KCAL
+                      </span>
+                      <span className="text-[9px] text-emerald-500 flex items-center justify-end gap-0.5 font-display font-semibold uppercase">
+                        <CheckCircle2 className="w-2.5 h-2.5" />
+                        SAVED
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Exercises Preview List */}
-        <div className="flex flex-col gap-2.5">
+        {/* RIGHT COLUMN: 6 Exercises in Circuit */}
+        <div className="md:col-span-6 flex flex-col gap-3">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-xs font-display font-bold uppercase tracking-widest text-[var(--text-muted)]">
-              {routine.exercises.length} EXERCISES IN CIRCUIT
+              CIRCUIT MOVEMENT SEQUENCE ({routine.exercises.length} EXERCISES)
             </h3>
             <span className="text-xs font-display font-bold text-orange-500 tracking-wider">
               ~{Math.round(((routine.workDurationSeconds + routine.restDurationSeconds) * routine.exercises.length * routine.totalRounds) / 60)} MINS TOTAL
             </span>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2.5">
             {routine.exercises.map((ex, idx) => (
               <div
                 key={ex.id}
-                className="flex items-center justify-between p-3.5 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-orange-500/30 transition-all"
+                className="flex items-center justify-between p-4 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-orange-500/40 transition-all shadow-sm"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] flex items-center justify-center font-display font-bold text-xs text-orange-500">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] flex items-center justify-center font-display font-black text-sm text-orange-500">
                     0{idx + 1}
                   </div>
                   <div>
-                    <h4 className="font-display font-bold text-base text-[var(--text-primary)] uppercase tracking-wide">
+                    <h4 className="font-display font-bold text-base md:text-lg text-[var(--text-primary)] uppercase tracking-wide">
                       {ex.name}
                     </h4>
-                    <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+                    <p className="text-xs text-[var(--text-secondary)] line-clamp-1 mb-1 font-sans">
+                      {ex.instructions}
+                    </p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       {ex.targetMuscles.map((muscle) => (
                         <span
                           key={muscle}
-                          className="text-[10px] font-display font-medium px-2 py-0.5 rounded bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)] uppercase"
+                          className="text-[10px] font-display font-semibold px-2 py-0.5 rounded bg-[var(--bg-surface-elevated)] text-[var(--text-secondary)] border border-[var(--border-subtle)] uppercase"
                         >
                           {muscle}
                         </span>
@@ -289,64 +346,16 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-[var(--text-muted)]" />
+                <ChevronRight className="w-4 h-4 text-[var(--text-muted)] shrink-0" />
               </div>
             ))}
           </div>
         </div>
-
-        {/* Previous Workouts / History Section */}
-        {sessions.length > 0 && (
-          <div className="flex flex-col gap-2.5 pt-2">
-            <div className="flex items-center justify-between px-1">
-              <h3 className="text-xs font-display font-bold uppercase tracking-widest text-[var(--text-muted)] flex items-center gap-1.5">
-                <History className="w-3.5 h-3.5" />
-                <span>WORKOUT HISTORY</span>
-              </h3>
-              <span className="text-xs font-display font-bold text-emerald-500 tracking-wider">
-                {sessions.length} COMPLETED
-              </span>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              {sessions.slice(0, 4).map((s) => (
-                <div
-                  key={s.id}
-                  className="flex items-center justify-between p-3.5 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                      <Award className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="font-display font-bold text-sm block text-[var(--text-primary)] uppercase tracking-wide">
-                        {s.routineTitle}
-                      </span>
-                      <span className="text-[10px] text-[var(--text-muted)] font-mono">
-                        {new Date(s.completedAt).toLocaleDateString()} • {formatTime(s.totalSeconds)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="font-display font-bold text-sm text-orange-500 block">
-                      ~{s.estimatedCalories} KCAL
-                    </span>
-                    <span className="text-[9px] text-emerald-500 flex items-center justify-end gap-0.5 font-display font-semibold uppercase">
-                      <CheckCircle2 className="w-2.5 h-2.5" />
-                      SAVED
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </main>
 
       {/* Screen Wake Lock Footer Badge */}
-      <footer className="pt-2 pb-1 text-center">
-        <p className="text-[11px] text-[var(--text-muted)] flex items-center justify-center gap-1.5 font-sans">
+      <footer className="pt-4 pb-2 text-center border-t border-[var(--border-subtle)] mt-4">
+        <p className="text-xs text-[var(--text-muted)] flex items-center justify-center gap-1.5 font-sans">
           <Smartphone className="w-3.5 h-3.5 text-orange-500" />
           <span>Screen wake lock active: display remains awake during training</span>
         </p>
