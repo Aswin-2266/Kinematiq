@@ -12,15 +12,20 @@ import {
   ShieldAlert, 
   Smartphone, 
   Play, 
-  ChevronRight,
-  Sparkles,
-  Award,
-  History
+  ChevronRight, 
+  Sparkles, 
+  Award, 
+  History, 
+  Sliders, 
+  User as UserIcon, 
+  CheckCircle2
 } from "lucide-react";
 import { DEFAULT_ROUTINE } from "@/data/defaultRoutine";
 import { WorkoutTimer } from "@/components/WorkoutTimer";
+import { AuthModal } from "@/components/AuthModal";
+import { RoutineEditor } from "@/components/RoutineEditor";
 import { getLocalSessions, syncPendingSessions } from "@/lib/offlineQueue";
-import { WorkoutSession } from "@/types";
+import { WorkoutSession, Routine, User } from "@/types";
 import { formatTime } from "@/lib/utils";
 
 export default function Home() {
@@ -28,7 +33,13 @@ export default function Home() {
   const [soundEnabled, setSoundEnabled] = useState(false); // Default OFF as requested
   const [voiceEnabled, setVoiceEnabled] = useState(false); // Default OFF as requested
   const [isWorkingOut, setIsWorkingOut] = useState(false);
+  const [routine, setRoutine] = useState<Routine>(DEFAULT_ROUTINE);
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  // Modals
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
 
   useEffect(() => {
     // Sync theme class to document
@@ -40,7 +51,17 @@ export default function Home() {
   }, [theme]);
 
   useEffect(() => {
-    // Load local history on mount & attempt cloud sync
+    // Check saved auth state
+    const savedUser = localStorage.getItem("kinematiq_user");
+    if (savedUser) {
+      try {
+        setCurrentUser(JSON.parse(savedUser));
+      } catch {
+        // Ignore
+      }
+    }
+
+    // Load local history & attempt background cloud sync
     const local = getLocalSessions();
     setSessions(local);
     syncPendingSessions().then((res) => {
@@ -59,6 +80,21 @@ export default function Home() {
     setIsWorkingOut(false);
     // Background cloud sync attempt
     syncPendingSessions();
+  };
+
+  const handleAuthSuccess = (user: User) => {
+    setCurrentUser(user);
+    // Re-trigger sync with authenticated user
+    syncPendingSessions().then(() => {
+      setSessions(getLocalSessions());
+    });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("kinematiq_token");
+    localStorage.removeItem("kinematiq_user");
+    setCurrentUser(null);
+    setIsAuthOpen(false);
   };
 
   return (
@@ -118,6 +154,26 @@ export default function Home() {
           >
             {theme === "dark" ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-700" />}
           </button>
+
+          {/* User Account / Profile */}
+          <button
+            onClick={() => setIsAuthOpen(true)}
+            className={`p-2.5 rounded-xl border transition-all ${
+              currentUser
+                ? "bg-gradient-to-tr from-orange-500 to-amber-500 text-white font-bold text-xs"
+                : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-primary)] hover:border-orange-500/40"
+            }`}
+            title={currentUser ? `Signed in as ${currentUser.name}` : "Sign In to sync to MongoDB"}
+            aria-label="Account Settings"
+          >
+            {currentUser ? (
+              <span className="w-4 h-4 flex items-center justify-center font-black">
+                {currentUser.name.charAt(0).toUpperCase()}
+              </span>
+            ) : (
+              <UserIcon className="w-4 h-4 text-[var(--text-muted)]" />
+            )}
+          </button>
         </div>
       </header>
 
@@ -125,31 +181,48 @@ export default function Home() {
       <main className="flex-1 py-5 flex flex-col gap-5">
         {/* Hero Circuit Card */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-b from-[var(--bg-surface)] to-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] p-6 shadow-xl">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-xs font-semibold mb-3">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Google Search Recommended Circuit</span>
+          <div className="flex items-center justify-between mb-3">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-500 text-xs font-semibold">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Full-Body Circuit</span>
+            </div>
+
+            {/* Customize Intervals Button */}
+            <button
+              onClick={() => setIsEditorOpen(true)}
+              className="inline-flex items-center gap-1 text-xs font-bold text-orange-500 hover:text-orange-400 transition-colors"
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span>Customize</span>
+            </button>
           </div>
 
           <h2 className="text-2xl font-black tracking-tight text-[var(--text-primary)] mb-2">
-            {DEFAULT_ROUTINE.title}
+            {routine.title}
           </h2>
 
           <p className="text-sm text-[var(--text-secondary)] mb-4 leading-relaxed">
-            {DEFAULT_ROUTINE.description}
+            {routine.description}
           </p>
 
           {/* Quick Metrics Grid */}
           <div className="grid grid-cols-3 gap-2.5 my-3">
             <div className="p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
-              <span className="block text-xl font-extrabold text-orange-500">40s</span>
+              <span className="block text-xl font-extrabold text-orange-500 font-mono">
+                {routine.workDurationSeconds}s
+              </span>
               <span className="text-[11px] font-medium text-[var(--text-muted)] uppercase">Work</span>
             </div>
             <div className="p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
-              <span className="block text-xl font-extrabold text-emerald-500">20s</span>
+              <span className="block text-xl font-extrabold text-emerald-500 font-mono">
+                {routine.restDurationSeconds}s
+              </span>
               <span className="text-[11px] font-medium text-[var(--text-muted)] uppercase">Rest</span>
             </div>
             <div className="p-3 rounded-2xl bg-[var(--bg-primary)] border border-[var(--border-subtle)] text-center">
-              <span className="block text-xl font-extrabold text-blue-500">3</span>
+              <span className="block text-xl font-extrabold text-blue-500 font-mono">
+                {routine.totalRounds}
+              </span>
               <span className="text-[11px] font-medium text-[var(--text-muted)] uppercase">Rounds</span>
             </div>
           </div>
@@ -168,13 +241,15 @@ export default function Home() {
         <div className="flex flex-col gap-2.5">
           <div className="flex items-center justify-between px-1">
             <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">
-              6 Exercises in Circuit
+              {routine.exercises.length} Exercises in Circuit
             </h3>
-            <span className="text-xs text-orange-500 font-semibold">18 Mins Total</span>
+            <span className="text-xs text-orange-500 font-semibold">
+              ~{Math.round(((routine.workDurationSeconds + routine.restDurationSeconds) * routine.exercises.length * routine.totalRounds) / 60)} Mins Total
+            </span>
           </div>
 
           <div className="flex flex-col gap-2">
-            {DEFAULT_ROUTINE.exercises.map((ex, idx) => (
+            {routine.exercises.map((ex, idx) => (
               <div
                 key={ex.id}
                 className="flex items-center justify-between p-3.5 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] hover:border-orange-500/30 transition-all"
@@ -211,15 +286,15 @@ export default function Home() {
             <div className="flex items-center justify-between px-1">
               <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)] flex items-center gap-1.5">
                 <History className="w-3.5 h-3.5" />
-                <span>Recent Workouts</span>
+                <span>Workout History</span>
               </h3>
               <span className="text-xs text-emerald-500 font-semibold">
-                {sessions.length} Logged
+                {sessions.length} Completed
               </span>
             </div>
 
             <div className="flex flex-col gap-2">
-              {sessions.slice(0, 3).map((s) => (
+              {sessions.slice(0, 4).map((s) => (
                 <div
                   key={s.id}
                   className="flex items-center justify-between p-3 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-xs"
@@ -238,9 +313,15 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <span className="font-mono font-bold text-orange-500">
-                    ~{s.estimatedCalories} kcal
-                  </span>
+                  <div className="text-right">
+                    <span className="font-mono font-bold text-orange-500 block">
+                      ~{s.estimatedCalories} kcal
+                    </span>
+                    <span className="text-[9px] text-emerald-500 flex items-center justify-end gap-0.5">
+                      <CheckCircle2 className="w-2.5 h-2.5" />
+                      Saved
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -255,7 +336,7 @@ export default function Home() {
           className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-extrabold text-base flex items-center justify-center gap-2 shadow-xl shadow-orange-500/25 active:scale-[0.98] transition-transform"
         >
           <Play className="w-5 h-5 fill-current" />
-          <span>START WORKOUT (3 ROUNDS)</span>
+          <span>START WORKOUT ({routine.totalRounds} ROUNDS)</span>
         </button>
         <p className="text-[11px] text-center text-[var(--text-muted)] mt-2 flex items-center justify-center gap-1.5">
           <Smartphone className="w-3.5 h-3.5" />
@@ -266,11 +347,30 @@ export default function Home() {
       {/* Live Fullscreen Workout Timer Modal */}
       {isWorkingOut && (
         <WorkoutTimer
-          routine={DEFAULT_ROUTINE}
+          routine={routine}
           onExit={() => setIsWorkingOut(false)}
           onComplete={handleWorkoutComplete}
           initialSoundEnabled={soundEnabled}
           initialVoiceEnabled={voiceEnabled}
+        />
+      )}
+
+      {/* Auth Modal (Sign In / Register / Account) */}
+      {isAuthOpen && (
+        <AuthModal
+          currentUser={currentUser}
+          onClose={() => setIsAuthOpen(false)}
+          onAuthSuccess={handleAuthSuccess}
+          onLogout={handleLogout}
+        />
+      )}
+
+      {/* Routine Customizer Modal */}
+      {isEditorOpen && (
+        <RoutineEditor
+          currentRoutine={routine}
+          onClose={() => setIsEditorOpen(false)}
+          onSave={(updated) => setRoutine(updated)}
         />
       )}
     </div>

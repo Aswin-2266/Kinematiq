@@ -16,7 +16,7 @@
 | **Phase 3** | **Mobile APIs (Audio Engine & Wake Lock)** | Web Audio API gym beeps (zero external assets), Web Speech API voice coach, Screen Wake Lock API (keeps phone screen on) | `[x] Completed` |
 | **Phase 4** | **Visual Form Motion Engine** | High-contrast animated visual guides for all 6 exercises (Squats, Push-Ups, Reverse Lunges, Glute Bridges, Plank, Burpees/Mountain Climbers) + Form Cues | `[x] Completed` |
 | **Phase 5** | **Workout Interval Timer & State Machine** | 40s Work / 20s Rest / 60s Round Break cycle, 3 full rounds, "Up Next" preview during 20s rest, large mobile touch targets | `[x] Completed` |
-| **Phase 6** | **Authentication, History & Custom Builder** | Multi-user JWT auth, Workout completion summary, MongoDB session history & streaks, Custom routine editor | `[ ] Pending` |
+| **Phase 6** | **Authentication, History & Custom Builder** | Multi-user JWT auth, Workout completion summary, MongoDB session history & streaks, Custom routine editor | `[x] Completed` |
 | **Phase 7** | **Verification, Mobile Polish & AGENTS.md** | Automated TypeScript build verification, mobile touch ergonomics test, documentation in AGENTS.md, final walkthrough | `[ ] Pending` |
 
 ---
@@ -73,11 +73,11 @@
 - [x] Build sticky mobile action bar: Pause / Resume, Skip, Back, Sound Mute, Voice Coach Toggle
 
 ### Phase 6: Authentication, History & Custom Builder
-- [ ] Next.js API routes for Auth (`/api/auth/register`, `/api/auth/login`, `/api/auth/me`)
-- [ ] Next.js API routes for Sessions (`/api/workouts`, `/api/routines`)
-- [ ] Post-workout celebration summary card with stats: Total time, rounds finished, estimated calories
-- [ ] History & Streak dashboard: View previous sessions and workout consistency
-- [ ] Routine Customizer: Edit work/rest/round durations or swap exercise order
+- [x] Next.js API routes for Auth (`/api/auth/register`, `/api/auth/login`, `/api/auth/me`)
+- [x] Next.js API routes for Sessions (`/api/workouts`, `/api/routines`)
+- [x] Post-workout celebration summary card with stats: Total time, rounds finished, estimated calories
+- [x] History & Streak dashboard: View previous sessions and workout consistency
+- [x] Routine Customizer: Edit work/rest/round durations or swap exercise order
 
 ### Phase 7: Verification, Mobile Polish & AGENTS.md
 - [ ] Run `npm run build` and eliminate any TypeScript or build errors
