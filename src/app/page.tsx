@@ -181,22 +181,22 @@ export default function Home() {
     <div className="min-h-screen w-full bg-[var(--bg-primary)] text-[var(--text-primary)] flex flex-col justify-between transition-colors duration-150 [scrollbar-gutter:stable] pb-24 sm:pb-28">
       {/* 1. FULL-WIDTH EDGE-TO-EDGE TOP NAVIGATION */}
       <header className="w-full border-b border-[var(--border-subtle)] bg-[var(--bg-primary)]/90 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between">
           {/* Logo & Brand Identity */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/25 shrink-0">
-              <Flame className="w-5 h-5 fill-current" />
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-orange-500/25 shrink-0">
+              <Flame className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-display font-black tracking-wider uppercase text-[var(--text-primary)] leading-none">
+                <h1 className="text-xl sm:text-2xl font-display font-black tracking-wider uppercase text-[var(--text-primary)] leading-none">
                   KINEMATIQ
                 </h1>
                 <span className="hidden sm:inline-block text-[10px] font-display font-bold px-2 py-0.5 rounded bg-orange-500/10 text-orange-500 border border-orange-500/30 uppercase tracking-widest">
                   INTERVAL PROTOCOL
                 </span>
               </div>
-              <p className="text-[11px] text-[var(--text-muted)] font-sans hidden sm:block mt-0.5">
+              <p className="text-[11px] text-[var(--text-muted)] font-sans hidden md:block mt-0.5">
                 Precision Bodyweight HIIT & Functional Circuit Conditioning
               </p>
             </div>
@@ -220,12 +220,12 @@ export default function Home() {
             </span>
           </div>
 
-          {/* Right Action & Control Toggles */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Right Action & Control Toggles (Compact & Responsive on 320px+ Mobile Screens) */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
             {/* Audio Toggle (Default OFF) */}
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className={`px-3 py-2 rounded-xl border flex items-center gap-2 transition-all ${
+              className={`w-9 h-9 sm:w-auto sm:px-3 sm:py-2 rounded-xl border flex items-center justify-center gap-2 transition-all ${
                 soundEnabled
                   ? "bg-emerald-500/15 border-emerald-500 text-emerald-500 shadow-sm shadow-emerald-500/10"
                   : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-orange-500/30"
@@ -242,7 +242,7 @@ export default function Home() {
             {/* Voice Coach Toggle (Default OFF) */}
             <button
               onClick={() => setVoiceEnabled(!voiceEnabled)}
-              className={`px-3 py-2 rounded-xl border flex items-center gap-2 transition-all ${
+              className={`w-9 h-9 sm:w-auto sm:px-3 sm:py-2 rounded-xl border flex items-center justify-center gap-2 transition-all ${
                 voiceEnabled
                   ? "bg-orange-500/15 border-orange-500 text-orange-500 shadow-sm shadow-orange-500/10"
                   : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-muted)] hover:border-orange-500/30"
@@ -259,7 +259,7 @@ export default function Home() {
             {/* Light / Dark Mode Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] hover:border-orange-500/40 transition-all"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] hover:border-orange-500/40 transition-all flex items-center justify-center shrink-0"
               title={`Switch to ${theme === "dark" ? "Light" : "Dark"} Mode`}
               aria-label="Toggle Theme"
             >
@@ -269,7 +269,7 @@ export default function Home() {
             {/* User Account / Profile Button */}
             <button
               onClick={() => setIsAuthOpen(true)}
-              className={`p-2 sm:px-3 sm:py-2 rounded-xl border transition-all flex items-center gap-2 ${
+              className={`w-9 h-9 sm:w-auto sm:px-3 sm:py-2 rounded-xl border transition-all flex items-center justify-center gap-2 shrink-0 ${
                 currentUser
                   ? "bg-gradient-to-tr from-orange-500 to-amber-500 text-white font-display font-bold text-xs shadow-md shadow-orange-500/20"
                   : "bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] text-[var(--text-primary)] hover:border-orange-500/40"
@@ -279,7 +279,7 @@ export default function Home() {
             >
               {currentUser ? (
                 <>
-                  <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-black text-xs">
+                  <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center font-black text-xs shrink-0">
                     {currentUser.name.charAt(0).toUpperCase()}
                   </span>
                   <span className="hidden sm:inline font-display text-xs tracking-wide">{currentUser.name}</span>

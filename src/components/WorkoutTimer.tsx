@@ -299,17 +299,17 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     <div className="fixed inset-0 z-50 bg-[#080B11] text-[#F8FAFC] flex flex-col justify-between overflow-y-auto [scrollbar-gutter:stable] select-none w-full min-h-screen">
       {/* 1. FULL-WIDTH TOP TACTICAL HUD BAR */}
       <header className="w-full border-b border-[#1E2B42] bg-[#0A0E18]/95 backdrop-blur-md sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between w-full">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between w-full">
           {/* Round Badge & Elapsed Timer */}
-          <div className="flex items-center gap-3">
-            <div className="px-3.5 py-1.5 rounded-lg bg-[#0F1624] border border-[#1E2B42] text-xs md:text-sm font-display font-bold tracking-wider flex items-center gap-2 uppercase">
-              <Zap className="w-4 h-4 text-orange-500 fill-current" />
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <div className="px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg bg-[#0F1624] border border-[#1E2B42] text-[11px] sm:text-xs md:text-sm font-display font-bold tracking-wider flex items-center gap-1.5 sm:gap-2 uppercase">
+              <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500 fill-current" />
               <span>
                 ROUND {currentRound} / {routine.totalRounds}
               </span>
             </div>
 
-            <span className="text-sm font-mono font-bold text-slate-400">
+            <span className="text-xs sm:text-sm font-mono font-bold text-slate-400">
               {formatTime(totalSecondsElapsed)}
             </span>
           </div>
@@ -333,10 +333,10 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
           </div>
 
           {/* Audio Controls & Exit */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <button
               onClick={toggleSound}
-              className={`p-2.5 rounded-xl border transition-all ${
+              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center transition-all ${
                 soundEnabled
                   ? "bg-emerald-500/15 border-emerald-500 text-emerald-500"
                   : "bg-[#0F1624] border-[#1E2B42] text-slate-500 hover:border-emerald-500/30"
@@ -344,12 +344,12 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
               title={soundEnabled ? "Audio: ON" : "Audio: OFF"}
               aria-label="Toggle Sound"
             >
-              {soundEnabled ? <Volume2 className="w-4 h-4 md:w-5 md:h-5" /> : <VolumeX className="w-4 h-4 md:w-5 md:h-5" />}
+              {soundEnabled ? <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" /> : <VolumeX className="w-4 h-4 sm:w-5 sm:h-5" />}
             </button>
 
             <button
               onClick={toggleVoice}
-              className={`p-2.5 rounded-xl border transition-all ${
+              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl border flex items-center justify-center transition-all ${
                 voiceEnabled
                   ? "bg-orange-500/15 border-orange-500 text-orange-500"
                   : "bg-[#0F1624] border-[#1E2B42] text-slate-500 hover:border-orange-500/30"
@@ -357,16 +357,16 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
               title={voiceEnabled ? "Voice: ON" : "Voice: OFF"}
               aria-label="Toggle Voice Coach"
             >
-              {voiceEnabled ? <Mic className="w-4 h-4 md:w-5 md:h-5" /> : <MicOff className="w-4 h-4 md:w-5 md:h-5" />}
+              {voiceEnabled ? <Mic className="w-4 h-4 sm:w-5 sm:h-5" /> : <MicOff className="w-4 h-4 sm:w-5 sm:h-5" />}
             </button>
 
             <button
               onClick={handleOpenExitModal}
-              className="p-2.5 rounded-xl bg-[#0F1624] border border-[#1E2B42] text-slate-400 hover:text-red-400 hover:border-red-500/40 transition-colors"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#0F1624] border border-[#1E2B42] text-slate-400 hover:text-red-400 hover:border-red-500/40 transition-colors flex items-center justify-center"
               title="Exit Workout"
               aria-label="Exit Workout"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         </div>
