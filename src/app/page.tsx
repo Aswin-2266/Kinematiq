@@ -576,7 +576,7 @@ export default function Home() {
                     READY FOR YOUR FIRST SESSION?
                   </p>
                   <p className="text-[11px] max-w-xs text-[var(--text-muted)] font-sans">
-                    Tap &quot;Start Workout&quot; below. Even partial stops will be accurately logged and synced to MongoDB Atlas.
+                    Tap &quot;Start Workout&quot; below. Even partial stops will be accurately logged and synced to your cloud account.
                   </p>
                 </div>
               )}
@@ -859,7 +859,7 @@ export default function Home() {
                 <span>Cloud Storage Status:</span>
                 <span className="font-display font-bold text-emerald-500 flex items-center gap-1">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>MongoDB Atlas Verified</span>
+                  <span>Cloud Verified</span>
                 </span>
               </div>
             </div>

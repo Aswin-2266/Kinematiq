@@ -58,10 +58,11 @@ Kinematiq is a mobile-first workout web application built for high-intensity int
 ### Rule 4: Timestamp Delta Timing
 - Do not rely solely on simple `setInterval` counters for workout time. Use timestamp deltas or deterministic interval state transitions so mobile browser background tab throttling does not cause timer drift.
 
-### Rule 5: Zero Internal Database ID Leakage to Frontend UI
+### Rule 5: Zero Internal Database ID & Tech Stack Leakage to Frontend UI
 - Never render raw database IDs (`_id`, `userId`, `routineId`, session IDs, or cloud sync IDs) to the user in the frontend UI.
-- All IDs are strictly internal to API queries, data mutations, and React `key` props.
-- User-facing interfaces must show clean, human-readable information only (e.g. "MongoDB Atlas Verified", routine titles, elapsed time, and progress badges).
+- Never expose underlying backend/database tech stack brand names (e.g. MongoDB, Atlas, Mongoose) in frontend UI text.
+- All IDs and tech details are strictly internal to API routes, data models, and React keys.
+- User-facing interfaces must show clean, human-readable and brand-neutral terms only (e.g. "SYNC ACTIVE", "Cloud Verified", routine titles, elapsed time, and progress badges).
 
 
 ---

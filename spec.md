@@ -24,6 +24,7 @@
 | **Phase 11** | **Account Routine Persistence & Sticky Start Controller** | Save and sync custom intervals to user account in MongoDB Atlas + local storage, persistent bottom sticky START WORKOUT controller bar | `[x] Completed` |
 | **Phase 12** | **Partial & Stopped Session Recording & Telemetry** | Early exit confirmation dialog ("Save & Exit" vs "Discard" vs "Resume"), partial session summary celebration screen, green COMPLETED vs amber STOPPED EARLY history badges, interactive Session Report modal | `[x] Completed` |
 | **Phase 13** | **Responsive Mobile Nav & PWA Brand Assets** | Compact responsive top nav & timer HUD for 320px-360px viewports (Samsung Galaxy A55), high-res PWA manifest brand icons (192px/512px/Apple touch/Favicon) eliminating 404 errors | `[x] Completed` |
+| **Phase 14** | **Frontend Tech Stack & Brand Neutrality** | Replaced all user-facing backend brand names (MongoDB/Atlas) with clean product terms: "SYNC ACTIVE", "Cloud Verified", and account cloud sync | `[x] Completed` |
 
 ---
 
@@ -130,6 +131,13 @@
 - [x] Mobile profile button showing sleek circular avatar with user initial, expanding to full name on desktop
 - [x] Responsive HUD header in `WorkoutTimer.tsx` matching compact mobile spacing
 - [x] Generated high-resolution PWA brand icons (`icon-192.png`, `icon-512.png`, `apple-touch-icon.png`, `favicon.ico`) in `public/` directory, resolving manifest 404 errors
+
+### Phase 14: Frontend Tech Stack & Brand Neutrality
+- [x] Updated user profile popup status badge from "CLOUD MONGODB SYNC ACTIVE" to minimalist "SYNC ACTIVE"
+- [x] Updated Auth modal subtitle to "Sync all workouts seamlessly to your cloud account"
+- [x] Updated workout history empty state from "synced to MongoDB Atlas" to "synced to your cloud account"
+- [x] Updated Session Detail Report modal storage badge to "Cloud Verified"
+- [x] Codified Rule 5 in `AGENTS.md` strictly prohibiting leakage of backend brand names in the UI
 
 
 

@@ -85,7 +85,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             <div className="w-full p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs flex items-center justify-center gap-2 font-display font-bold uppercase tracking-wider">
               <CheckCircle className="w-4 h-4" />
-              <span>CLOUD MONGODB SYNC ACTIVE</span>
+              <span>SYNC ACTIVE</span>
             </div>
 
             <button
@@ -108,7 +108,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   {tab === "login" ? "SIGN IN // ATHLETE" : "CREATE ATHLETE PROFILE"}
                 </h3>
                 <p className="text-[11px] text-[var(--text-muted)]">
-                  Sync all workouts directly to MongoDB Atlas
+                  Sync all workouts seamlessly to your cloud account
                 </p>
               </div>
             </div>
