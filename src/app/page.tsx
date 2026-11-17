@@ -33,6 +33,26 @@ import { getLocalSessions, syncPendingSessions } from "@/lib/offlineQueue";
 import { WorkoutSession, Routine, User, Exercise } from "@/types";
 import { formatTime } from "@/lib/utils";
 
+function normalizeRoutine(raw: any): Routine {
+  if (!raw || typeof raw !== "object") return DEFAULT_ROUTINE;
+  const exercises = Array.isArray(raw.exercises) && raw.exercises.length > 0
+    ? raw.exercises
+    : DEFAULT_ROUTINE.exercises;
+  return {
+    ...DEFAULT_ROUTINE,
+    ...raw,
+    exercises: exercises.map((ex: any, idx: number) => {
+      const defaultEx = DEFAULT_ROUTINE.exercises[idx] || DEFAULT_ROUTINE.exercises[0];
+      return {
+        ...defaultEx,
+        ...ex,
+        alternative: (ex?.alternative && ex.alternative.name) ? ex.alternative : undefined,
+        regression: (ex?.regression && ex.regression.name) ? ex.regression : undefined,
+      };
+    }),
+  };
+}
+
 export default function Home() {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [soundEnabled, setSoundEnabled] = useState(false); // Default OFF per AGENTS.md
@@ -63,8 +83,10 @@ export default function Home() {
     const cached = localStorage.getItem(localKey);
     if (cached) {
       try {
-        setRoutine(JSON.parse(cached));
-      } catch {}
+        setRoutine(normalizeRoutine(JSON.parse(cached)));
+      } catch {
+        setRoutine(DEFAULT_ROUTINE);
+      }
     } else {
       setRoutine(DEFAULT_ROUTINE);
     }
@@ -78,9 +100,10 @@ export default function Home() {
         });
         const data = await res.json();
         if (data.success && data.userRoutine) {
-          setRoutine(data.userRoutine);
+          const cleanRoutine = normalizeRoutine(data.userRoutine);
+          setRoutine(cleanRoutine);
           if (userId) {
-            localStorage.setItem(`kinematiq_routine_${userId}`, JSON.stringify(data.userRoutine));
+            localStorage.setItem(`kinematiq_routine_${userId}`, JSON.stringify(cleanRoutine));
           }
         }
       } catch {
@@ -139,13 +162,14 @@ export default function Home() {
 
   // Save routine customizations for this account
   const handleSaveRoutine = async (updated: Routine) => {
-    setRoutine(updated);
+    const clean = normalizeRoutine(updated);
+    setRoutine(clean);
 
     // 1. Save locally for instant offline persistence
     const localKey = currentUser ? `kinematiq_routine_${currentUser.id}` : "kinematiq_custom_routine";
-    localStorage.setItem(localKey, JSON.stringify(updated));
+    localStorage.setItem(localKey, JSON.stringify(clean));
 
-    // 2. Save to cloud MongoDB Atlas under the user's account if logged in
+    // 2. Save to cloud under the user's account if logged in
     const token = localStorage.getItem("kinematiq_token");
     if (token) {
       try {
@@ -155,7 +179,7 @@ export default function Home() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(updated),
+          body: JSON.stringify(clean),
         });
       } catch {
         // Offline fallback: already saved in localStorage

@@ -6,6 +6,21 @@ import { verifyToken } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
+function sanitizeExercises(exercises: any[]) {
+  if (!Array.isArray(exercises) || exercises.length === 0) {
+    return DEFAULT_ROUTINE.exercises;
+  }
+  return exercises.map((ex, idx) => {
+    const defaultEx = DEFAULT_ROUTINE.exercises[idx] || DEFAULT_ROUTINE.exercises[0];
+    return {
+      ...defaultEx,
+      ...ex,
+      alternative: (ex?.alternative && ex.alternative.name) ? ex.alternative : undefined,
+      regression: (ex?.regression && ex.regression.name) ? ex.regression : undefined,
+    };
+  });
+}
+
 export async function GET(req: NextRequest) {
   try {
     let userId: string | null = null;
@@ -29,7 +44,13 @@ export async function GET(req: NextRequest) {
 
     let userRoutine = null;
     if (userId) {
-      userRoutine = await Routine.findOne({ userId }).sort({ updatedAt: -1 });
+      const doc = await Routine.findOne({ userId }).sort({ updatedAt: -1 }).lean();
+      if (doc) {
+        userRoutine = {
+          ...doc,
+          exercises: sanitizeExercises(doc.exercises),
+        };
+      }
     }
 
     return NextResponse.json({
@@ -65,6 +86,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const cleanExercises = sanitizeExercises(body.exercises || DEFAULT_ROUTINE.exercises);
+
     let routineDoc;
     if (userId) {
       // Upsert custom routine for this account
@@ -79,7 +102,7 @@ export async function POST(req: NextRequest) {
           restDurationSeconds: body.restDurationSeconds || 20,
           roundBreakDurationSeconds: body.roundBreakDurationSeconds || 60,
           totalRounds: body.totalRounds || 3,
-          exercises: body.exercises || DEFAULT_ROUTINE.exercises,
+          exercises: cleanExercises,
         },
         { upsert: true, new: true, setDefaultsOnInsert: true }
       );
@@ -93,7 +116,7 @@ export async function POST(req: NextRequest) {
         restDurationSeconds: body.restDurationSeconds || 20,
         roundBreakDurationSeconds: body.roundBreakDurationSeconds || 60,
         totalRounds: body.totalRounds || 3,
-        exercises: body.exercises || DEFAULT_ROUTINE.exercises,
+        exercises: cleanExercises,
       });
     }
 

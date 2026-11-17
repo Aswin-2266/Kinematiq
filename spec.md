@@ -25,6 +25,7 @@
 | **Phase 12** | **Partial & Stopped Session Recording & Telemetry** | Early exit confirmation dialog ("Save & Exit" vs "Discard" vs "Resume"), partial session summary celebration screen, green COMPLETED vs amber STOPPED EARLY history badges, interactive Session Report modal | `[x] Completed` |
 | **Phase 13** | **Responsive Mobile Nav & PWA Brand Assets** | Compact responsive top nav & timer HUD for 320px-360px viewports (Samsung Galaxy A55), high-res PWA manifest brand icons (192px/512px/Apple touch/Favicon) eliminating 404 errors | `[x] Completed` |
 | **Phase 14** | **Frontend Tech Stack & Brand Neutrality** | Replaced all user-facing backend brand names (MongoDB/Atlas) with clean product terms: "SYNC ACTIVE", "Cloud Verified", and account cloud sync | `[x] Completed` |
+| **Phase 15** | **Workout Launcher Resilience & Subdocument Sanitization** | Fixed `TypeError: Cannot read properties of undefined (reading 'split')` by hardening `FormCoachCard`, `VisualExerciseGuide`, `WorkoutTimer`, and routine sanitizers against empty/partial subdocuments | `[x] Completed` |
 
 ---
 
@@ -138,6 +139,12 @@
 - [x] Updated workout history empty state from "synced to MongoDB Atlas" to "synced to your cloud account"
 - [x] Updated Session Detail Report modal storage badge to "Cloud Verified"
 - [x] Codified Rule 5 in `AGENTS.md` strictly prohibiting leakage of backend brand names in the UI
+
+### Phase 15: Workout Launcher Resilience & Subdocument Sanitization
+- [x] Fixed `TypeError: Cannot read properties of undefined (reading 'split')` occurring when clicking "START WORKOUT" with customized/synced routines
+- [x] Added `hasAlternative` and `hasRegression` property guards in `FormCoachCard.tsx` to verify `.name` exists before string manipulation
+- [x] Added fallback protection in `WorkoutTimer.tsx` breadcrumb sequence (`ex?.name ? ex.name.split(" ")[0] : ...`) and `VisualExerciseGuide.tsx`
+- [x] Built `normalizeRoutine` engine in `src/app/page.tsx` and `sanitizeExercises` in `/api/routines/route.ts` to guarantee clean exercise subdocuments across storage and network boundaries
 
 
 

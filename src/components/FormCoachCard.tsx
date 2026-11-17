@@ -23,29 +23,30 @@ export const FormCoachCard: React.FC<FormCoachCardProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(!isCompact);
 
-  const activeName = isAlternative && exercise.alternative
-    ? exercise.alternative.name
-    : isRegression && exercise.regression
-    ? exercise.regression.name
-    : exercise.name;
+  const hasAlternative = Boolean(exercise.alternative && exercise.alternative.name);
+  const hasRegression = Boolean(exercise.regression && exercise.regression.name);
 
-  const activeMuscles = isAlternative && exercise.alternative
+  const activeName = (isAlternative && hasAlternative && exercise.alternative?.name)
+    || (isRegression && hasRegression && exercise.regression?.name)
+    || exercise.name
+    || "Exercise";
+
+  const activeMuscles = (isAlternative && hasAlternative && exercise.alternative?.targetMuscles?.length)
     ? exercise.alternative.targetMuscles
-    : exercise.targetMuscles;
+    : (exercise.targetMuscles || []);
 
-  const activeInstructions = isAlternative && exercise.alternative
-    ? exercise.alternative.instructions
-    : isRegression && exercise.regression
-    ? exercise.regression.instructions
-    : exercise.instructions;
+  const activeInstructions = (isAlternative && hasAlternative && exercise.alternative?.instructions)
+    || (isRegression && hasRegression && exercise.regression?.instructions)
+    || exercise.instructions
+    || "";
 
-  const activeCues = isAlternative && exercise.alternative
+  const activeCues = (isAlternative && hasAlternative && exercise.alternative?.formCues?.length)
     ? exercise.alternative.formCues
-    : exercise.formCues;
+    : (exercise.formCues || []);
 
-  const activeWarning = isAlternative && exercise.alternative
-    ? exercise.alternative.watchOutWarning
-    : exercise.watchOutWarning;
+  const activeWarning = (isAlternative && hasAlternative && exercise.alternative?.watchOutWarning)
+    || exercise.watchOutWarning
+    || "";
 
   return (
     <div className="w-full flex flex-col gap-2.5 rounded-2xl bg-[#0F1624] border border-[#1E2B42] p-4 shadow-md transition-all">
@@ -56,7 +57,7 @@ export const FormCoachCard: React.FC<FormCoachCardProps> = ({
             <span className="text-[10px] font-display font-bold uppercase tracking-widest text-orange-500">
               FORM CUE & TARGET
             </span>
-            {isRegression && (
+            {isRegression && hasRegression && (
               <span className="text-[9px] font-display font-bold bg-amber-500/10 border border-amber-500/20 text-amber-400 px-2 py-0.5 rounded uppercase">
                 REGRESSION
               </span>
@@ -69,7 +70,7 @@ export const FormCoachCard: React.FC<FormCoachCardProps> = ({
 
         {/* Quick Toggles: Alternative or Regression */}
         <div className="flex items-center gap-1">
-          {exercise.alternative && (
+          {hasAlternative && (
             <button
               onClick={onToggleAlternative}
               className={`px-2.5 py-1.5 rounded-lg border text-xs font-display font-bold tracking-wider flex items-center gap-1.5 transition-all ${
@@ -81,12 +82,14 @@ export const FormCoachCard: React.FC<FormCoachCardProps> = ({
             >
               <ArrowRightLeft className="w-3 h-3" />
               <span>
-                {isAlternative ? "BURPEES" : exercise.alternative.name.split(" ")[0].toUpperCase()}
+                {isAlternative
+                  ? "BURPEES"
+                  : (exercise.alternative?.name ? exercise.alternative.name.split(" ")[0].toUpperCase() : "ALT")}
               </span>
             </button>
           )}
 
-          {exercise.regression && (
+          {hasRegression && (
             <button
               onClick={onToggleRegression}
               className={`px-2.5 py-1.5 rounded-lg border text-xs font-display font-bold tracking-wider flex items-center gap-1.5 transition-all ${

@@ -14,8 +14,9 @@ export const VisualExerciseGuide: React.FC<VisualExerciseGuideProps> = ({
   isAlternative = false,
   isRegression = false,
 }) => {
-  const activeVisualKey = isAlternative && exercise.alternative
-    ? exercise.alternative.visualKey
+  const hasAlternativeVisual = Boolean(isAlternative && exercise.alternative && exercise.alternative.visualKey);
+  const activeVisualKey = hasAlternativeVisual
+    ? exercise.alternative?.visualKey
     : exercise.visualKey;
 
   return (

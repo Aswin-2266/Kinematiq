@@ -175,9 +175,10 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
       setPhase("work");
       setSecondsRemaining(routine.workDurationSeconds);
       audioEngine.playStartChime(soundEnabled);
-      const activeName = useAlternative && currentExercise.alternative
-        ? currentExercise.alternative.name
-        : currentExercise.name;
+      const activeName = (useAlternative && currentExercise.alternative?.name)
+        || (useRegression && currentExercise.regression?.name)
+        || currentExercise.name
+        || "Exercise";
       voiceCoach.speak(`Round ${currentRound}. Begin ${activeName}`, voiceEnabled);
     } else if (phase === "work") {
       const isLastExerciseInRound = currentExerciseIndex === routine.exercises.length - 1;
@@ -318,7 +319,7 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
           <div className="hidden lg:flex items-center gap-2">
             {routine.exercises.map((ex, i) => (
               <span
-                key={ex.id}
+                key={ex?.id || i}
                 className={`px-2.5 py-1 rounded text-[11px] font-display font-bold uppercase tracking-wider transition-all ${
                   i === currentExerciseIndex && phase !== "completed"
                     ? "bg-orange-500 text-white shadow-md shadow-orange-500/20"
@@ -327,7 +328,7 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
                     : "text-slate-500 bg-[#0F1624] border border-[#1E2B42]"
                 }`}
               >
-                0{i + 1} {ex.name.split(" ")[0]}
+                0{i + 1} {ex?.name ? ex.name.split(" ")[0] : `EX ${i + 1}`}
               </span>
             ))}
           </div>
