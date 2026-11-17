@@ -22,6 +22,7 @@
 | **Phase 9** | **Responsive Desktop & Widescreen Upgrade** | 2-column widescreen desktop layout (`max-w-5xl md:grid-cols-12`), split-screen workout timer with sticky controls and coach panel, MongoDB Atlas cloud live integration | `[x] Completed` |
 | **Phase 10** | **Full-Width Studio Web Layout & Movement Matrix** | Edge-to-edge sticky top navigation, full-screen hero command center, 2-column exercise movement matrix (`max-w-7xl`), training intelligence sidebar, full-screen studio workout console | `[x] Completed` |
 | **Phase 11** | **Account Routine Persistence & Sticky Start Controller** | Save and sync custom intervals to user account in MongoDB Atlas + local storage, persistent bottom sticky START WORKOUT controller bar | `[x] Completed` |
+| **Phase 12** | **Partial & Stopped Session Recording & Telemetry** | Early exit confirmation dialog ("Save & Exit" vs "Discard" vs "Resume"), partial session summary celebration screen, green COMPLETED vs amber STOPPED EARLY history badges, interactive Session Report modal | `[x] Completed` |
 
 ---
 
@@ -115,6 +116,14 @@
 - [x] Reset routine to default on logout and reload custom routine when switching accounts
 - [x] Sticky Bottom "START WORKOUT" action bar (`fixed bottom-0 left-0 right-0 z-40`) providing a high-impact, full-width tactile launcher that follows user scroll on mobile, tablet, and desktop
 - [x] Added content bottom padding (`pb-28`) ensuring footer and cards are never obscured by the persistent launcher
+
+### Phase 12: Partial & Stopped Session Recording & Telemetry
+- [x] Exit Confirmation Dialog: Pauses countdown clock when `X` is pressed and offers "Save & Exit", "Discard Session", and "Resume Workout"
+- [x] Partial Workout Summary Screen: Shows exact active time, completed rounds/moves fraction, and estimated calories burned
+- [x] Visual Distinction in History: Green "COMPLETED" vs Amber "STOPPED EARLY" pill badges with exact movements completed
+- [x] Telemetry Breakdown Counter: Displays "X Sessions (Y Full • Z Partial)" and adds all active minutes into Total Time Logged
+- [x] Clickable Session Detail Report modal: Displays complete workout telemetry, timestamps, rounds/exercises ratio, and MongoDB cloud status
+
 
 
 
