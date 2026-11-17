@@ -24,6 +24,10 @@ import {
   Coffee,
   CheckCircle,
   Zap,
+  AlertTriangle,
+  Flame,
+  Clock,
+  RotateCcw
 } from "lucide-react";
 
 interface WorkoutTimerProps {
@@ -56,6 +60,10 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
   // Exercise Customization in current session
   const [useAlternative, setUseAlternative] = useState<boolean>(false);
   const [useRegression, setUseRegression] = useState<boolean>(false);
+
+  // Early Exit & Partial Session Management
+  const [showExitModal, setShowExitModal] = useState<boolean>(false);
+  const [savedSessionResult, setSavedSessionResult] = useState<WorkoutSession | null>(null);
 
   const currentExercise = routine.exercises[currentExerciseIndex];
   const nextExercise =
@@ -90,6 +98,78 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     setVoiceEnabled(nextState);
   };
 
+  // Full Natural Workout Completion Handler
+  const handleFullCompletion = useCallback(() => {
+    setPhase("completed");
+    audioEngine.playRoundComplete(soundEnabled);
+    voiceCoach.speak("Workout complete! Outstanding effort.", voiceEnabled);
+
+    const totalPlannedMoves = routine.exercises.length * routine.totalRounds;
+    const fullSession: WorkoutSession = {
+      id: `sess_${Date.now()}`,
+      routineTitle: routine.title,
+      startedAt: new Date(Date.now() - (totalSecondsElapsed + 1) * 1000).toISOString(),
+      completedAt: new Date().toISOString(),
+      totalSeconds: totalSecondsElapsed + 1,
+      completedRounds: routine.totalRounds,
+      totalRoundsPlanned: routine.totalRounds,
+      completedExercises: totalPlannedMoves,
+      totalExercisesPlanned: totalPlannedMoves,
+      estimatedCalories: Math.round(((totalSecondsElapsed + 1) / 60) * 11.5),
+      syncedToCloud: false,
+      status: "completed",
+      isCompleted: true,
+    };
+
+    saveLocalSession(fullSession);
+    setSavedSessionResult(fullSession);
+    if (onComplete) onComplete(fullSession);
+  }, [routine, totalSecondsElapsed, soundEnabled, voiceEnabled, onComplete]);
+
+  // Partial Early Exit Save Handler
+  const handleSaveAndExit = () => {
+    const totalPlannedMoves = routine.exercises.length * routine.totalRounds;
+    const completedMoves = (currentRound - 1) * routine.exercises.length + currentExerciseIndex;
+    const exactRounds = Number(((currentRound - 1) + (currentExerciseIndex / routine.exercises.length)).toFixed(1));
+
+    const partialSession: WorkoutSession = {
+      id: `sess_${Date.now()}`,
+      routineTitle: routine.title,
+      startedAt: new Date(Date.now() - Math.max(1, totalSecondsElapsed) * 1000).toISOString(),
+      completedAt: new Date().toISOString(),
+      totalSeconds: Math.max(1, totalSecondsElapsed),
+      completedRounds: exactRounds,
+      totalRoundsPlanned: routine.totalRounds,
+      completedExercises: completedMoves,
+      totalExercisesPlanned: totalPlannedMoves,
+      estimatedCalories: Math.round((Math.max(1, totalSecondsElapsed) / 60) * 11.5),
+      syncedToCloud: false,
+      status: "partial",
+      isCompleted: false,
+    };
+
+    saveLocalSession(partialSession);
+    setSavedSessionResult(partialSession);
+    if (onComplete) onComplete(partialSession);
+    setShowExitModal(false);
+    setPhase("completed");
+  };
+
+  const handleDiscardSession = () => {
+    setShowExitModal(false);
+    onExit();
+  };
+
+  const handleResumeWorkout = () => {
+    setShowExitModal(false);
+    setIsRunning(true);
+  };
+
+  const handleOpenExitModal = () => {
+    setIsRunning(false); // Pause clock while exit modal is open
+    setShowExitModal(true);
+  };
+
   const transitionToNextPhase = useCallback(() => {
     if (phase === "get-ready") {
       setPhase("work");
@@ -104,23 +184,7 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
       const isLastRound = currentRound === routine.totalRounds;
 
       if (isLastExerciseInRound && isLastRound) {
-        setPhase("completed");
-        audioEngine.playRoundComplete(soundEnabled);
-        voiceCoach.speak("Workout complete! Outstanding effort.", voiceEnabled);
-
-        const newSession: WorkoutSession = {
-          id: `sess_${Date.now()}`,
-          routineTitle: routine.title,
-          startedAt: new Date(Date.now() - (totalSecondsElapsed + 1) * 1000).toISOString(),
-          completedAt: new Date().toISOString(),
-          totalSeconds: totalSecondsElapsed + 1,
-          completedRounds: routine.totalRounds,
-          completedExercises: routine.exercises.length * routine.totalRounds,
-          estimatedCalories: Math.round(((totalSecondsElapsed + 1) / 60) * 11.5),
-          syncedToCloud: false,
-        };
-        saveLocalSession(newSession);
-        if (onComplete) onComplete(newSession);
+        handleFullCompletion();
       } else if (isLastExerciseInRound) {
         setPhase("round-break");
         setSecondsRemaining(routine.roundBreakDurationSeconds);
@@ -163,13 +227,12 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     soundEnabled,
     voiceEnabled,
     useAlternative,
-    totalSecondsElapsed,
-    onComplete,
+    handleFullCompletion,
   ]);
 
   // Main 1-second interval state machine loop
   useEffect(() => {
-    if (!isRunning || phase === "completed") {
+    if (!isRunning || phase === "completed" || showExitModal) {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
@@ -193,7 +256,7 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isRunning, phase, transitionToNextPhase, soundEnabled]);
+  }, [isRunning, phase, showExitModal, transitionToNextPhase, soundEnabled]);
 
   const handleSkipForward = () => {
     transitionToNextPhase();
@@ -228,6 +291,9 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
     completed: "text-emerald-500 stroke-emerald-500",
     idle: "text-slate-500 stroke-slate-500",
   }[phase];
+
+  const currentMovesDone = (currentRound - 1) * routine.exercises.length + currentExerciseIndex;
+  const totalMovesPlanned = routine.totalRounds * routine.exercises.length;
 
   return (
     <div className="fixed inset-0 z-50 bg-[#080B11] text-[#F8FAFC] flex flex-col justify-between overflow-y-auto [scrollbar-gutter:stable] select-none w-full min-h-screen">
@@ -295,8 +361,8 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
             </button>
 
             <button
-              onClick={onExit}
-              className="p-2.5 rounded-xl bg-[#0F1624] border border-[#1E2B42] text-slate-400 hover:text-red-400 transition-colors"
+              onClick={handleOpenExitModal}
+              className="p-2.5 rounded-xl bg-[#0F1624] border border-[#1E2B42] text-slate-400 hover:text-red-400 hover:border-red-500/40 transition-colors"
               title="Exit Workout"
               aria-label="Exit Workout"
             >
@@ -309,45 +375,68 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
       {/* 2. FULL-WIDTH RESPONSIVE MAIN INTERVAL DISPLAY */}
       <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10 flex flex-col justify-center">
         {phase === "completed" ? (
-          /* WORKOUT COMPLETED CELEBRATION */
-          <div className="w-full max-w-xl mx-auto flex flex-col items-center text-center gap-6 py-8 animate-fade-in bg-[#0F1624] border border-[#1E2B42] rounded-3xl p-8 shadow-2xl">
-            <div className="w-24 h-24 rounded-3xl bg-emerald-500/10 border-2 border-emerald-500 flex items-center justify-center text-emerald-500 shadow-2xl shadow-emerald-500/20">
-              <Award className="w-12 h-12" />
-            </div>
+          /* WORKOUT SUMMARY CARD (Handles Both Full & Partial Finishes) */
+          <div className="w-full max-w-xl mx-auto flex flex-col items-center text-center gap-6 py-8 animate-fade-in bg-[#0F1624] border border-[#1E2B42] rounded-3xl p-6 sm:p-8 shadow-2xl">
+            {savedSessionResult?.status === "partial" ? (
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-amber-500/10 border-2 border-amber-500 flex items-center justify-center text-amber-500 shadow-2xl shadow-amber-500/20">
+                <Flame className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+            ) : (
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-emerald-500/10 border-2 border-emerald-500 flex items-center justify-center text-emerald-500 shadow-2xl shadow-emerald-500/20">
+                <Award className="w-10 h-10 sm:w-12 sm:h-12" />
+              </div>
+            )}
 
             <div>
-              <h2 className="text-3xl md:text-5xl font-display font-black tracking-wide text-white uppercase">
-                CIRCUIT COMPLETE
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-display font-bold uppercase tracking-wider mb-2 border">
+                {savedSessionResult?.status === "partial" ? (
+                  <span className="text-amber-400 border-amber-500/30 bg-amber-500/10">
+                    STOPPED EARLY // LOGGED
+                  </span>
+                ) : (
+                  <span className="text-emerald-400 border-emerald-500/30 bg-emerald-500/10">
+                    FULL WORKOUT COMPLETED
+                  </span>
+                )}
+              </div>
+
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-display font-black tracking-wide text-white uppercase">
+                {savedSessionResult?.status === "partial" ? "SESSION LOGGED" : "CIRCUIT COMPLETE"}
               </h2>
-              <p className="text-sm md:text-base text-slate-400 mt-2 max-w-md">
-                Outstanding discipline! You crushed all {routine.totalRounds} rounds of the protocol.
+
+              <p className="text-sm md:text-base text-slate-400 mt-2 max-w-md leading-relaxed font-sans">
+                {savedSessionResult?.status === "partial"
+                  ? "Great discipline! Every minute and movement advances your conditioning. Your progress has been saved to your records."
+                  : `Outstanding discipline! You crushed all ${routine.totalRounds} rounds of the protocol.`}
               </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 w-full my-2">
+            <div className="grid grid-cols-3 gap-3 w-full my-1">
               <div className="p-4 rounded-2xl bg-[#080B11] border border-[#1E2B42]">
-                <span className="block text-2xl md:text-4xl font-display font-black text-orange-500">
-                  {formatTime(totalSecondsElapsed)}
+                <span className="block text-2xl sm:text-3xl md:text-4xl font-display font-black text-orange-500">
+                  {formatTime(savedSessionResult ? savedSessionResult.totalSeconds : totalSecondsElapsed)}
                 </span>
-                <span className="text-[10px] md:text-xs font-display font-bold uppercase text-slate-500 tracking-wider">
-                  TIME
+                <span className="text-[10px] sm:text-xs font-display font-bold uppercase text-slate-500 tracking-wider">
+                  ACTIVE TIME
                 </span>
               </div>
 
               <div className="p-4 rounded-2xl bg-[#080B11] border border-[#1E2B42]">
-                <span className="block text-2xl md:text-4xl font-display font-black text-emerald-500">
-                  {routine.totalRounds}
+                <span className="block text-2xl sm:text-3xl md:text-4xl font-display font-black text-emerald-500">
+                  {savedSessionResult?.status === "partial"
+                    ? `${savedSessionResult.completedExercises}/${savedSessionResult.totalExercisesPlanned || totalMovesPlanned}`
+                    : `${routine.totalRounds}R`}
                 </span>
-                <span className="text-[10px] md:text-xs font-display font-bold uppercase text-slate-500 tracking-wider">
-                  ROUNDS
+                <span className="text-[10px] sm:text-xs font-display font-bold uppercase text-slate-500 tracking-wider">
+                  {savedSessionResult?.status === "partial" ? "MOVES DONE" : "ROUNDS"}
                 </span>
               </div>
 
               <div className="p-4 rounded-2xl bg-[#080B11] border border-[#1E2B42]">
-                <span className="block text-2xl md:text-4xl font-display font-black text-blue-500">
-                  ~{Math.round(((totalSecondsElapsed) / 60) * 11.5)}
+                <span className="block text-2xl sm:text-3xl md:text-4xl font-display font-black text-blue-500">
+                  ~{savedSessionResult ? savedSessionResult.estimatedCalories : Math.round((totalSecondsElapsed / 60) * 11.5)}
                 </span>
-                <span className="text-[10px] md:text-xs font-display font-bold uppercase text-slate-500 tracking-wider">
+                <span className="text-[10px] sm:text-xs font-display font-bold uppercase text-slate-500 tracking-wider">
                   CALORIES
                 </span>
               </div>
@@ -355,10 +444,10 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
 
             <button
               onClick={onExit}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-display font-black tracking-wider text-base md:text-lg flex items-center justify-center gap-2 shadow-xl shadow-orange-500/25 active:scale-[0.98] transition-transform"
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-display font-black tracking-wider text-base sm:text-lg flex items-center justify-center gap-2 shadow-xl shadow-orange-500/25 active:scale-[0.98] transition-transform hover:brightness-105"
             >
               <CheckCircle className="w-5 h-5" />
-              <span>LOG SESSION & RETURN TO DASHBOARD</span>
+              <span>RETURN TO DASHBOARD</span>
             </button>
           </div>
         ) : (
@@ -553,6 +642,85 @@ export const WorkoutTimer: React.FC<WorkoutTimerProps> = ({
             <SkipForward className="w-6 h-6" />
           </button>
         </footer>
+      )}
+
+      {/* 3. EXIT CONFIRMATION MODAL ("END WORKOUT EARLY?") */}
+      {showExitModal && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-3xl bg-[#0F1624] border border-[#1E2B42] text-white p-6 sm:p-7 shadow-2xl relative flex flex-col gap-5 animate-fade-in">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-display font-black uppercase tracking-wide text-white">
+                  END WORKOUT EARLY?
+                </h3>
+                <p className="text-xs text-slate-400">
+                  You can save your active progress to history or discard.
+                </p>
+              </div>
+            </div>
+
+            {/* Current Session Snapshot */}
+            <div className="p-4 rounded-2xl bg-[#080B11] border border-[#1E2B42] grid grid-cols-3 gap-2 text-center">
+              <div>
+                <span className="block text-xl font-display font-black text-orange-500">
+                  {formatTime(totalSecondsElapsed)}
+                </span>
+                <span className="text-[10px] font-display font-bold uppercase text-slate-500">
+                  ACTIVE TIME
+                </span>
+              </div>
+              <div>
+                <span className="block text-xl font-display font-black text-emerald-500">
+                  {currentMovesDone}/{totalMovesPlanned}
+                </span>
+                <span className="text-[10px] font-display font-bold uppercase text-slate-500">
+                  MOVES LOGGED
+                </span>
+              </div>
+              <div>
+                <span className="block text-xl font-display font-black text-blue-500">
+                  ~{Math.round((totalSecondsElapsed / 60) * 11.5)}
+                </span>
+                <span className="text-[10px] font-display font-bold uppercase text-slate-500">
+                  EST. KCAL
+                </span>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex flex-col gap-2.5 pt-1">
+              {/* Primary: Save and Exit */}
+              <button
+                onClick={handleSaveAndExit}
+                className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-display font-black uppercase tracking-wider text-sm flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25 active:scale-[0.98] transition-transform hover:brightness-105"
+              >
+                <CheckCircle className="w-4 h-4" />
+                <span>SAVE & EXIT WORKOUT</span>
+              </button>
+
+              {/* Secondary: Resume Workout */}
+              <button
+                onClick={handleResumeWorkout}
+                className="w-full py-3 px-4 rounded-xl bg-[#162033] border border-[#1E2B42] text-slate-200 font-display font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 hover:border-orange-500/40 transition-colors"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-orange-500" />
+                <span>RESUME WORKOUT</span>
+              </button>
+
+              {/* Tertiary: Discard without saving */}
+              <button
+                onClick={handleDiscardSession}
+                className="w-full py-2.5 px-4 rounded-xl text-red-400 hover:bg-red-500/10 font-display font-semibold uppercase tracking-wider text-xs flex items-center justify-center gap-1.5 transition-colors"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>DISCARD SESSION (DO NOT SAVE)</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

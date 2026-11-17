@@ -56,9 +56,13 @@ export interface WorkoutSession {
   completedAt: string;
   totalSeconds: number;
   completedRounds: number;
+  totalRoundsPlanned?: number;
   completedExercises: number;
+  totalExercisesPlanned?: number;
   estimatedCalories: number;
   syncedToCloud: boolean;
+  status?: "completed" | "partial";
+  isCompleted?: boolean;
 }
 
 export interface UserPreferences {

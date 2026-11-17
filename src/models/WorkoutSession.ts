@@ -8,7 +8,11 @@ export interface IWorkoutSession extends Document {
   completedAt: Date;
   totalSeconds: number;
   completedRounds: number;
+  totalRoundsPlanned: number;
   completedExercises: number;
+  totalExercisesPlanned: number;
+  status: "completed" | "partial";
+  isCompleted: boolean;
   estimatedCalories: number;
   notes?: string;
   createdAt: Date;
@@ -47,9 +51,26 @@ const WorkoutSessionSchema = new Schema<IWorkoutSession>(
       type: Number,
       required: true,
     },
+    totalRoundsPlanned: {
+      type: Number,
+      default: 3,
+    },
     completedExercises: {
       type: Number,
       required: true,
+    },
+    totalExercisesPlanned: {
+      type: Number,
+      default: 18,
+    },
+    status: {
+      type: String,
+      enum: ["completed", "partial"],
+      default: "completed",
+    },
+    isCompleted: {
+      type: Boolean,
+      default: true,
     },
     estimatedCalories: {
       type: Number,
